@@ -1,5 +1,5 @@
 #include "RPC.hpp"
-#include "CrowdControl.hpp"
+#include "CrowdControlRunner.hpp"
 #include <random>
 #include <chrono>
 #include <nlohmann/json.hpp>
@@ -76,7 +76,7 @@ void RPC::Send(CCEffectInstance& instance, const std::string& command) {
 	}
 
 	nlohmann::json data;
-	data["token"] = CrowdControl::token;
+	data["token"] = CrowdControlRunner::token;
 	data["call"]["method"] = "effectResponse";
 	data["call"]["args"] = nlohmann::json::array();
 
@@ -106,12 +106,12 @@ void RPC::Send(CCEffectInstance& instance, const std::string& command) {
 	nlohmann::json jsonObj;
 	jsonObj["action"] = "rpc";
 	jsonObj["data"] = data.dump();
-	CrowdControl::WriteToSocket(jsonObj);
+	CrowdControlRunner::WriteToSocket(jsonObj);
 }
 
 void RPC::Send(CCEffectBase& effect, const std::string& command) {
 	nlohmann::json data;
-	data["token"] = CrowdControl::token;
+	data["token"] = CrowdControlRunner::token;
 	data["call"]["method"] = "effectReport";
 	data["call"]["args"] = nlohmann::json::array();
 
@@ -133,5 +133,5 @@ void RPC::Send(CCEffectBase& effect, const std::string& command) {
 	nlohmann::json jsonObj;
 	jsonObj["action"] = "rpc";
 	jsonObj["data"] = data.dump();
-	CrowdControl::WriteToSocket(jsonObj);
+	CrowdControlRunner::WriteToSocket(jsonObj);
 }

@@ -1,3 +1,3 @@
 #include "Streambuf.hpp" 
 
-HANDLE Streambuf::hConsole = nullptr; 
+HANDLE Streambuf::hConsole = nullptr;

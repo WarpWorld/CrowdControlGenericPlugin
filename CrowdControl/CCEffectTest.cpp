@@ -5,7 +5,7 @@ CCEffectTest::CCEffectTest() {
 
 }
 
-EffectResult CCEffectTest::OnTriggerEffect(CCEffectInstance* effectInstance) { 
+EffectResult CCEffectTest::OnTriggerEffect(CCEffectInstance* effectInstance) {
 	Streambuf::Important("TRIGGERED");
 	return EffectResult::Success;
 }

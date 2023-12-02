@@ -1,4 +1,4 @@
-#include "CrowdControl.hpp"
+#include "CrowdControlRunner.hpp"
 #include "Morality.hpp"
 #include "CCEffectBase.hpp"
 #include "CCEffectInstance.hpp"
@@ -7,7 +7,7 @@
 #include <nlohmann/json.hpp>
 
 CCEffectBase::CCEffectBase() {
-	
+
 }
 
 void CCEffectBase::ToggleSellable(bool sell) {
@@ -35,7 +35,7 @@ void CCEffectBase::ToggleVisible(bool vis) {
 void CCEffectBase::UpdatePrice(unsigned int newPrice) {
 	nlohmann::json sellableMessage;
 
-	sellableMessage["gamePackID"] = CrowdControl::gamePackID;
+	sellableMessage["gamePackID"] = CrowdControlRunner::gamePackID;
 	sellableMessage["effectOverrides"] = nlohmann::json::array({
 		{
 			{"price", newPrice},

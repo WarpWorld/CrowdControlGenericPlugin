@@ -12,7 +12,7 @@ void CCEffectParametersTest::SetupParams() {
 	entry.AddOption("Five");
 
 	parameterEntries[entry.id] = entry;
-} 
+}
 
 EffectResult CCEffectParametersTest::OnTriggerEffect(CCEffectInstanceParameters* effectInstance) {
 	std::cout << effectInstance->quantity << "\n";

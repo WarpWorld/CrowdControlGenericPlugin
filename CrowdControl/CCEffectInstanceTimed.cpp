@@ -36,7 +36,7 @@ void CCEffectInstanceTimed::Resume() {
 		auto currentPauseDuration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - pauseTime);
 		pausedDuration += currentPauseDuration;
 		RPC::TimedResume(*this);
-	} 
+	}
 }
 
 void CCEffectInstanceTimed::Reset() {

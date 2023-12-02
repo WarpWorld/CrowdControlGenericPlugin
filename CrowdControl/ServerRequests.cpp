@@ -1,5 +1,5 @@
 #include "ServerRequests.hpp"
-#include "CrowdControl.hpp"
+#include "CrowdControlRunner.hpp"
 
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
@@ -26,7 +26,7 @@ bool ServerRequests::makingRequest = false;
 
 pplx::task<void> ServerRequests::SendPost(const std::wstring& postType, std::function<void(const std::wstring&)> callback, web::json::value json, bool gameSession) {
 	std::wstring url;
-	
+
 	if (gameSession) {
 		url = L"https://openapi.crowdcontrol.live/game-session/" + postType;
 	}
@@ -37,7 +37,7 @@ pplx::task<void> ServerRequests::SendPost(const std::wstring& postType, std::fun
 	http_client client(url);
 
 	http_request request(methods::POST);
-	request.headers().add(L"Authorization", L"cc-auth-token " + std::wstring(CrowdControl::token.begin(), CrowdControl::token.end()));
+	request.headers().add(L"Authorization", L"cc-auth-token " + std::wstring(CrowdControlRunner::token.begin(), CrowdControlRunner::token.end()));
 	request.headers().set_content_type(L"application/json"); // Set Content-Type
 	request.set_body(json); // Set the JSON payload
 
@@ -58,7 +58,7 @@ pplx::task<void> ServerRequests::SendPost(const std::wstring& postType, std::fun
 		try {
 			auto result = previousTask.get();
 			if (!result.empty()) {
-				CrowdControl::PushToQueue(callback, std::wstring(result.begin(), result.end()));
+				CrowdControlRunner::PushToQueue(callback, std::wstring(result.begin(), result.end()));
 			}
 		}
 		catch (const http_exception& e) {
@@ -78,7 +78,7 @@ pplx::task<void> ServerRequests::RequestGet(const std::wstring& getType, std::fu
 	http_client client(url);
 
 	http_request request(methods::GET);
-	request.headers().add(L"Authorization", L"cc-auth-token " + std::wstring(CrowdControl::token.begin(), CrowdControl::token.end()));
+	request.headers().add(L"Authorization", L"cc-auth-token " + std::wstring(CrowdControlRunner::token.begin(), CrowdControlRunner::token.end()));
 
 	std::wcout << L"GET: " << url;
 
@@ -96,7 +96,7 @@ pplx::task<void> ServerRequests::RequestGet(const std::wstring& getType, std::fu
 		try {
 			auto result = previousTask.get();
 			if (!result.empty()) {
-				CrowdControl::PushToQueue(callback, std::wstring(result.begin(), result.end()));
+				CrowdControlRunner::PushToQueue(callback, std::wstring(result.begin(), result.end()));
 			}
 		}
 		catch (const http_exception& e) {

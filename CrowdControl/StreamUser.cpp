@@ -15,7 +15,7 @@ StreamUser::StreamUser(nlohmann::json json) {
 	email = json["profile"]["originData"]["user"]["email"];
 	profileIconUrl = json["profile"]["image"];
 	roles = json["profile"]["roles"].get<std::vector<std::string>>();
-	subscriptions = json["profile"]["subscriptions"].get<std::vector<std::string>>(); 
+	subscriptions = json["profile"]["subscriptions"].get<std::vector<std::string>>();
 	originID = json["profile"]["originID"];
 }
 
