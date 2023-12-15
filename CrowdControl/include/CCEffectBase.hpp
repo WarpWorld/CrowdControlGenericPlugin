@@ -22,6 +22,7 @@ public:
 	void ToggleSellable(bool sellable);
 	void ToggleVisible(bool visible);
 	void UpdatePrice(unsigned int newPrice);
+	void Setup(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
 	//void UpdateNonPoolable(bool newNonPoolable);
 	//void UpdateSessionMax(unsigned int newSessionMax);
 	virtual bool CanBeRan();
@@ -57,14 +58,14 @@ public:
 		return manifest;
 	}
 
-private:
+public:
 	bool noPooling = false;
 	bool sellable = true;
 	bool visible = true;
 	Morality morality = Morality::Neutral;
 	Orderliness orderliness = Orderliness::Neutral;
 	std::string description;
-	unsigned int price = 10;
+	int price = 10;
 	int maxRetries = 3;
 	float retryDelay = 5.0f;
 	float pendingDelay = 0.5f;

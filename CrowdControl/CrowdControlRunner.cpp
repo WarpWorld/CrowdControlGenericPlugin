@@ -76,6 +76,8 @@ std::string CrowdControlRunner::extMessage;
 
 std::atomic<int> CrowdControlRunner::commandCode;
 
+Streambuf customBuf;
+
 void CrowdControlRunner::WriteToSocket(nlohmann::json jsonObj) {
 	std::cout << "SENT: " + jsonObj.dump() << "\n";
 	ccSocket->write(net::buffer(std::string(jsonObj.dump())));
@@ -167,6 +169,8 @@ void ProcessSubResult(std::string message) {
 
 		streamer = std::make_shared<StreamUser>();
 		streamer->Streamer(streamerJSON);
+
+		CrowdControlRunner::commandCode = 3;
 
 		if (startSessionAutomatically) {
 			CrowdControlRunner::StartGameSession();
@@ -363,7 +367,7 @@ void Processwhoami(std::string message) {
 	}
 
 	if (CrowdControlRunner::token == "") {
-		CrowdControlRunner::commandCode = 1;
+		CrowdControlRunner::commandCode = 2;
 
 		if (CrowdControlRunner::engine == "") {
 			CrowdControlRunner::ChooseSite();
@@ -668,6 +672,7 @@ void CrowdControlRunner::Disconnect() {
 	CrowdControlRunner::StopGameSession();
 	CrowdControlRunner::connected = false;
 	ccSocket->close(websocket::close_code::normal);
+	CrowdControlRunner::commandCode = 1;
 }
 
 std::string CrowdControlRunner::JSONManifest() {
@@ -775,6 +780,30 @@ void CrowdControlRunner::ResetCommandCode() {
 	CrowdControlRunner::commandCode = 0;
 }
 
+char* CrowdControlRunner::TestCharArray() {
+	char* charArray = new char[1000];
+
+	if (!Streambuf::queue.empty()) {
+		charArray = new char[1000];
+		std::string tempStr = Streambuf::queue.front();
+		Streambuf::queue.pop();
+		strcpy_s(charArray, 1000, tempStr.c_str());
+	}
+	else {
+		charArray[0] = '\0';
+		charArray[1] = '\0';
+	}
+
+	return charArray;
+}
+
+void CrowdControlRunner::AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
+	std::shared_ptr<CCEffectBase> effect = std::make_shared<CCEffectTest>();
+	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	std::cout << "Added effect " << effect->displayName;
+	AddEffect(effect);
+}
+
 // Sends a WebSocket message and prints the response
 int CrowdControlRunner::Run() {
 	localUser = std::make_shared<StreamUser>();
@@ -790,11 +819,10 @@ int CrowdControlRunner::Run() {
 	parameterEffect->AssignName("Give Coins");
 	parameterEffect->SetupParams();
 
-	Streambuf customBuf;
-	//auto* oldBuf = std::cout.rdbuf(&customBuf);
-	AddEffect(effect);
-	AddEffect(timedEffect);
-	AddEffect(parameterEffect);
+	std::cout.rdbuf(&customBuf);
+	//AddEffect(effect);
+	//AddEffect(timedEffect);
+	//AddEffect(parameterEffect);
 
 	gamePackID = "UnityDemo";
 	gameName = "Unity Demo";

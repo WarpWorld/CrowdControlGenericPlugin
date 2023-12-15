@@ -60,6 +60,9 @@
     <ClCompile Include="CrowdControlRunner.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CreateAndLinkDLLFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\CCEffect.hpp">
@@ -129,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\CrowdControlRunner.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CreateAndLinkDLLFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,10 +5,12 @@
 #include <string>
 #include <sstream>
 #include "DLLConfig.hpp"
+#include <queue>
 
 class CC_API Streambuf : public std::streambuf {
 private: 
 	std::ostringstream buffer;
+	
 
 protected:
 	enum class LogType {
@@ -18,9 +20,13 @@ protected:
 		LogImportant
 	};
 
+	static LogType currentLogType;
+
 	static HANDLE hConsole;
 
 	static void SetMode(LogType logType) {
+		currentLogType = logType;
+
 		if (hConsole == NULL) {
 			hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 		}
@@ -48,6 +54,11 @@ protected:
 			if (s[i] == '\n') {
 				std::string str = "[CC]: " + buffer.str();
 				std::cerr.write(str.c_str(), str.size());
+
+				char logTypeChar = static_cast<char>(static_cast<int>(currentLogType) + 65);
+				str.insert(0, 1, logTypeChar);
+
+				queue.push(str);
 				buffer.str(""); 
 				buffer.clear();
 			}
@@ -91,4 +102,6 @@ public:
 		std::cerr << str << "\n";
 		SetMode(LogType::Log);
 	}
+
+	static std::queue<std::string> queue;
 };

@@ -175,6 +175,7 @@
     <ClCompile Include="CCEffectTest.cpp" />
     <ClCompile Include="CCEffectTimed.cpp" />
     <ClCompile Include="CCEffectTimedTest.cpp" />
+    <ClCompile Include="CreateAndLinkDLLFile.cpp" />
     <ClCompile Include="CrowdControlRunner.cpp" />
     <ClCompile Include="RPC.cpp" />
     <ClCompile Include="ServerRequests.cpp" />
@@ -182,6 +183,7 @@
     <ClCompile Include="StreamUser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CreateAndLinkDLLFile.h" />
     <ClInclude Include="include\CCEffect.hpp" />
     <ClInclude Include="include\CCEffectBase.hpp" />
     <ClInclude Include="include\CCEffectInstance.hpp" />

@@ -17,6 +17,8 @@ public:
 	void EngineSet();
 	int CommandID();
 	void ResetCommandCode();
+	char* TestCharArray();
+	static void AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
 
 	static std::atomic<int> commandCode;
 
