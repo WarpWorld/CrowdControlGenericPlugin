@@ -56,6 +56,11 @@ std::string CrowdControlRunner::gameSessionID;
 std::atomic<bool> CrowdControlRunner::connected;
 bool CrowdControlRunner::sendingPost = false;
 static std::queue<std::pair<std::function<void(const std::wstring&)>, std::wstring>> PostGetResponses;
+
+
+static std::queue<std::shared_ptr<CCEffectInstance>> engineQueuedEffects;
+
+
 std::unordered_map<std::string, std::shared_ptr<CCEffectBase>> CrowdControlRunner::effects;
 std::unordered_map<std::string, std::shared_ptr<StreamUser>> streamUsers;
 std::unordered_map<std::string, std::shared_ptr<CCEffectInstanceTimed>> CrowdControlRunner::runningEffects;
@@ -409,7 +414,6 @@ std::shared_ptr<StreamUser> GetUser(const std::string& key) {
 	return 0;
 }
 
-
 void ReceiveEffectRequest(nlohmann::json payload, bool test) {
 	if (std::find(effectInstanceIDs.begin(), effectInstanceIDs.end(), payload["requestID"]) != effectInstanceIDs.end()) {
 		return;
@@ -505,6 +509,14 @@ void ProcessJSONMessage(std::string message) {
 	}
 }
 
+void CrowdControlRunner::Success(char * id) {
+	RPC::Success(std::string(id), 0, 0);
+}
+
+void CrowdControlRunner::Fail(char * id) {
+	RPC::FailTemporarily(std::string(id), 0, 0);
+}
+
 void DoRead() {
 	if (GetMillisecondsSinceOffset(update_time) < (CrowdControlRunner::FPS / 1000)) {
 		return;
@@ -535,6 +547,13 @@ void DoRead() {
 		std::shared_ptr<CCEffectInstanceTimed> timedInstance = std::dynamic_pointer_cast<CCEffectInstanceTimed>(instance);
 		std::shared_ptr<CCEffectInstanceParameters> parameterInstance = std::dynamic_pointer_cast<CCEffectInstanceParameters>(instance);
 
+		if (timedInstance == nullptr && parameterInstance == nullptr) {
+
+		}
+
+		engineQueuedEffects.push(instance);
+
+		/*
 		EffectResult result = EffectResult::Failure;
 
 		if (!instance->effect->CanBeRan()) {
@@ -585,9 +604,9 @@ void DoRead() {
 
 			instance->unscaledStartTime = GetMillisecondsSinceOffset(program_start);
 			pendingQueue.push(instance);
-		}
+		}*/
 	}
-
+	/*
 	for (const auto& runningTimedEffect : CrowdControlRunner::runningEffects) {
 		std::string effectID = runningTimedEffect.second->effect->id;
 
@@ -603,7 +622,7 @@ void DoRead() {
 			CrowdControlRunner::StopEffect(runningTimedEffect.second->effect->displayName);
 			break;
 		}
-	}
+	}*/
 }
 
 void AddEffect(std::shared_ptr<CCEffectBase> effect) {
@@ -781,13 +800,40 @@ void CrowdControlRunner::ResetCommandCode() {
 }
 
 char* CrowdControlRunner::TestCharArray() {
-	char* charArray = new char[1000];
+	char* charArray = new char[2000];
 
 	if (!Streambuf::queue.empty()) {
-		charArray = new char[1000];
+		charArray = new char[2000];
 		std::string tempStr = Streambuf::queue.front();
 		Streambuf::queue.pop();
-		strcpy_s(charArray, 1000, tempStr.c_str());
+		strcpy_s(charArray, 2000, tempStr.c_str());
+	}
+	else {
+		charArray[0] = '\0';
+		charArray[1] = '\0';
+	}
+
+	return charArray;
+}
+
+
+char* CrowdControlRunner::EngineEffect() {
+	char* charArray = new char[2000];
+
+	if (!engineQueuedEffects.empty()) {
+		charArray = new char[2000];
+
+		std::shared_ptr<CCEffectInstance> effect = engineQueuedEffects.front();
+		engineQueuedEffects.pop();
+
+		nlohmann::json effectManifest;
+		effectManifest["name"] = effect->effect->displayName;
+		effectManifest["id"] = effect->id;
+
+		std::string jsonString = effectManifest.dump(); // Convert JSON object to string
+
+		strcpy_s(charArray, 2000, jsonString.c_str());
+
 	}
 	else {
 		charArray[0] = '\0';
@@ -800,8 +846,38 @@ char* CrowdControlRunner::TestCharArray() {
 void CrowdControlRunner::AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
 	std::shared_ptr<CCEffectBase> effect = std::make_shared<CCEffectTest>();
 	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
-	std::cout << "Added effect " << effect->displayName;
+	std::cout << "Added Effect " << effect->displayName;
 	AddEffect(effect);
+}
+
+void CrowdControlRunner::AddTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration) {
+	std::shared_ptr<CCEffectTimed> timedEffect = std::make_shared<CCEffectTimedTest>();
+	timedEffect->SetupTimed(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
+	std::cout << "Added Timed Effect " << timedEffect->displayName;
+	AddEffect(timedEffect);
+}
+
+void CrowdControlRunner::AddParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
+	std::shared_ptr<CCEffectParameters> effect = std::make_shared<CCEffectParametersTest>();
+	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	std::cout << "Added Parameter Effect " << effect->displayName;
+	AddEffect(effect);
+}
+
+void CrowdControlRunner::AddParameterOption(char* name, char* paramName, char** options) {
+	std::string effectID = DisplayNameToID(name);
+	std::shared_ptr<CCEffectBase> effect = CrowdControlRunner::effects[effectID];
+	std::shared_ptr<CCEffectParameters> effectParameters = std::dynamic_pointer_cast<CCEffectParameters>(effect);
+
+	effectParameters->AddOptionsParameter(paramName, options);
+}
+
+void CrowdControlRunner::AddParameterMinMax(char* name, char* paramName, int min, int max) {
+	std::string effectID = DisplayNameToID(name);
+	std::shared_ptr<CCEffectBase> effect = CrowdControlRunner::effects[effectID];
+	std::shared_ptr<CCEffectParameters> effectParameters = std::dynamic_pointer_cast<CCEffectParameters>(effect);
+
+	effectParameters->AddMinMaxParameter(paramName, min, max);
 }
 
 // Sends a WebSocket message and prints the response
@@ -809,20 +885,7 @@ int CrowdControlRunner::Run() {
 	localUser = std::make_shared<StreamUser>();
 	localUser->LocalUser();
 
-	std::shared_ptr<CCEffectBase> effect = std::make_shared<CCEffectTest>();
-	effect->AssignName("Damage Player");
-
-	std::shared_ptr<CCEffectTimed> timedEffect = std::make_shared<CCEffectTimedTest>();
-	timedEffect->AssignName("Invert Controls");
-
-	std::shared_ptr<CCEffectParameters> parameterEffect = std::make_shared<CCEffectParametersTest>();
-	parameterEffect->AssignName("Give Coins");
-	parameterEffect->SetupParams();
-
 	std::cout.rdbuf(&customBuf);
-	//AddEffect(effect);
-	//AddEffect(timedEffect);
-	//AddEffect(parameterEffect);
 
 	gamePackID = "UnityDemo";
 	gameName = "Unity Demo";

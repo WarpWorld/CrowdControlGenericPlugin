@@ -29,5 +29,7 @@ public:
 
 		return manifest;
 	}
+
+	void SetupTimed(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration);
 };
 

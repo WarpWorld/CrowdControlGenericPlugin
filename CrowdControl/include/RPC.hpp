@@ -7,7 +7,11 @@
 class CC_API RPC {
 public:
 	static void Success(CCEffectInstance& instance);
+	static void Success(std::string id, int timeRemaining, long startTime);
+
 	static void FailTemporarily(CCEffectInstance& instance);
+	static void FailTemporarily(std::string id, int timeRemaining, long startTime);
+
 	static void FailPermanently(CCEffectInstance& instance);
 	static void TimedBegin(CCEffectInstanceTimed& instance);
 	static void TimedPause(CCEffectInstanceTimed& instance);
@@ -17,9 +21,10 @@ public:
 	static void MenuUnavailable(CCEffectBase& instance);
 	static void MenuVisible(CCEffectBase& instance);
 	static void MenuHidden(CCEffectBase& instance);
-
 private:
 	static void Send(CCEffectBase& instance, const std::string& command);
 	static void Send(CCEffectInstance& instance, const std::string& command);
+	static void Send(std::string id, const std::string& command);
+	static void Send(const std::string& command, std::string id, int timeRemaining, long startTime);
 };
 

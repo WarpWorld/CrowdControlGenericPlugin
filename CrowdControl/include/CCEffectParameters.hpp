@@ -24,4 +24,25 @@ public:
 
 		return manifest;
 	}
+
+	void AddOptionsParameter(char * name, char ** options) {
+		std::string nameStr(name);
+		ParameterEntry entry(nameStr, id, ParameterEntry::Kind::Item);
+
+		if (options != nullptr) {
+			for (int i = 0; options[i] != nullptr; ++i) {
+				entry.AddOption(options[i]);
+			}
+		}
+
+		parameterEntries[entry.id] = entry;
+	}
+
+	void AddMinMaxParameter(char * name, int min, int max) {
+		std::string nameStr(name);
+		ParameterEntry entry(nameStr, id, ParameterEntry::Kind::Quantity);
+
+		entry.SetMinMax(min, max);
+		parameterEntries[entry.id] = entry;
+	}
 };

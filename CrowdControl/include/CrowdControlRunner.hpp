@@ -19,6 +19,14 @@ public:
 	void ResetCommandCode();
 	char* TestCharArray();
 	static void AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
+	static void AddTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration);
+	static void AddParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
+	static void AddParameterOption(char* name, char* paramName, char** options);
+	static void AddParameterMinMax(char* name, char* paramName, int min, int max);
+
+	static void Success(char * name);
+	static void Fail(char * name);
+	static char* EngineEffect();
 
 	static std::atomic<int> commandCode;
 

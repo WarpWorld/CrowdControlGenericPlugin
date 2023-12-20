@@ -8,8 +8,16 @@ void RPC::Success(CCEffectInstance& instance) {
 	Send(instance, "success");
 }
 
+void RPC::Success(std::string id, int timeRemaining, long startTime) {
+	Send("success", id, timeRemaining, startTime);
+}
+
 void RPC::FailTemporarily(CCEffectInstance& instance) {
 	Send(instance, "failTemporary");
+}
+
+void RPC::FailTemporarily(std::string id, int timeRemaining, long startTime) {
+	Send("failTemporary", id, timeRemaining, startTime);
 }
 
 void RPC::FailPermanently(CCEffectInstance& instance) {
@@ -70,11 +78,7 @@ int EpochSeconds() {
 	return seconds.count();
 }
 
-void RPC::Send(CCEffectInstance& instance, const std::string& command) {
-	if (instance.id.find("-") == std::string::npos) { // We don't RPC local test effects
-		return;
-	}
-
+void RPC::Send(const std::string& command, std::string id, int timeRemaining, long startTime) {
 	nlohmann::json data;
 	data["token"] = CrowdControlRunner::token;
 	data["call"]["method"] = "effectResponse";
@@ -82,21 +86,15 @@ void RPC::Send(CCEffectInstance& instance, const std::string& command) {
 
 	nlohmann::json args;
 
-	CCEffectInstanceTimed* timedInstance = dynamic_cast<CCEffectInstanceTimed*>(&instance);
-	if (timedInstance != nullptr) {
-		args["timeRemaining"] = timedInstance->TimeRemaining();
-	}
-	else {
-		args["timeRemaining"] = 0;
-	}
-
-	args["request"] = instance.id;
+	args["request"] = id;
 
 	args["id"] = RandomString();
-	args["stamp"] = instance.unscaledStartTime;
+	args["stamp"] = startTime;
 	args["status"] = command;
 	args["stamp"] = EpochSeconds();
 	args["message"] = "";
+
+	args["timeRemaining"] = timeRemaining;
 
 	data["call"]["args"].push_back(args);
 
@@ -107,6 +105,21 @@ void RPC::Send(CCEffectInstance& instance, const std::string& command) {
 	jsonObj["action"] = "rpc";
 	jsonObj["data"] = data.dump();
 	CrowdControlRunner::WriteToSocket(jsonObj);
+}
+
+void RPC::Send(CCEffectInstance& instance, const std::string& command) {
+	if (instance.id.find("-") == std::string::npos) { // We don't RPC local test effects
+		return;
+	}
+
+	int timeRemaining = 0;
+
+	CCEffectInstanceTimed* timedInstance = dynamic_cast<CCEffectInstanceTimed*>(&instance);
+	if (timedInstance != nullptr) {
+		timeRemaining = timedInstance->TimeRemaining();
+	}
+
+	RPC::Send(command, instance.id, timeRemaining, instance.unscaledStartTime);
 }
 
 void RPC::Send(CCEffectBase& effect, const std::string& command) {
