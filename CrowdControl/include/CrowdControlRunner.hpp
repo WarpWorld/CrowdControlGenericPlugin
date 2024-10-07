@@ -24,6 +24,9 @@ public:
 	static void AddParameterOption(char* name, char* paramName, char** options);
 	static void AddParameterMinMax(char* name, char* paramName, int min, int max);
 
+	static void SetGameNameAndPackID(char* name, char* packID);
+
+
 	static void Success(char * name);
 	static void Fail(char * name);
 	static char* EngineEffect();

@@ -2,7 +2,7 @@
 
 #include "string.h"
 #include "CreateAndLinkDLLFile.h"
-#include "CrowdControlRunner.hpp"
+#include "include/CrowdControlRunner.hpp"
 
 //Exported method that invertes a given boolean.
 bool getInvertedBool(bool boolState)

@@ -1,9 +1,9 @@
-#include "CrowdControlRunner.hpp"
-#include "Morality.hpp"
-#include "CCEffectBase.hpp"
-#include "CCEffectInstance.hpp"
-#include "ServerRequests.hpp"
-#include "RPC.hpp"
+#include "include/CrowdControlRunner.hpp"
+#include "include/Morality.hpp"
+#include "include/CCEffectBase.hpp"
+#include "include/CCEffectInstance.hpp"
+#include "include/ServerRequests.hpp"
+#include "include/RPC.hpp"
 #include <nlohmann/json.hpp>
 
 CCEffectBase::CCEffectBase() {

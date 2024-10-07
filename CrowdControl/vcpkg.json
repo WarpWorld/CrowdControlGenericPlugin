@@ -1,0 +1,13 @@
+{
+  "name": "crowdcontrol",
+  "version": "1.0.0",
+  "builtin-baseline": "d07689ef165f033de5c0710e4f67c193a85373e1",
+  "dependencies": [
+    "nlohmann-json",
+    "cpprestsdk",
+    "boost-asio",
+    "boost-system",
+    "openssl",
+    "boost-beast"
+  ]
+}

@@ -1,0 +1,212 @@
+﻿  CrowdControlRunner.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectBase.hpp(31,14): warning C4251: 'CCEffectBase::id': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CCEffectBase'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectBase.hpp(32,14): warning C4251: 'CCEffectBase::displayName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CCEffectBase'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectBase.hpp(67,14): warning C4251: 'CCEffectBase::description': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CCEffectBase'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectBase.hpp(73,27): warning C4251: 'CCEffectBase::categories': class 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>' needs to have dll-interface to be used by clients of class 'CCEffectBase'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\vcpkg_installed\x64-windows\x64-windows\include\nlohmann\detail\json_pointer.hpp(666,17):
+  see declaration of 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(10,14): warning C4251: 'StreamUser::name': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(11,14): warning C4251: 'StreamUser::profileIconUrl': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(12,27): warning C4251: 'StreamUser::roles': class 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\vcpkg_installed\x64-windows\x64-windows\include\nlohmann\detail\json_pointer.hpp(666,17):
+  see declaration of 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(13,27): warning C4251: 'StreamUser::subscriptions': class 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\vcpkg_installed\x64-windows\x64-windows\include\nlohmann\detail\json_pointer.hpp(666,17):
+  see declaration of 'std::vector<std::basic_string<char,std::char_traits<char>,std::allocator<char>>,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(15,14): warning C4251: 'StreamUser::displayName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(16,14): warning C4251: 'StreamUser::originSite': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(17,14): warning C4251: 'StreamUser::email': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamUser.hpp(18,14): warning C4251: 'StreamUser::originID': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'StreamUser'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(34,26): warning C4251: 'CrowdControlRunner::commandCode': struct 'std::atomic<int>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\atomic(2771,35):
+  see declaration of 'std::atomic<int>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(36,21): warning C4251: 'CrowdControlRunner::connectionID': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(37,21): warning C4251: 'CrowdControlRunner::token': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(38,21): warning C4251: 'CrowdControlRunner::gamePackID': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(39,21): warning C4251: 'CrowdControlRunner::gameName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(40,21): warning C4251: 'CrowdControlRunner::gameSessionID': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(41,21): warning C4251: 'CrowdControlRunner::engine': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(42,21): warning C4251: 'CrowdControlRunner::extMessage': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(45,27): warning C4251: 'CrowdControlRunner::connected': struct 'std::atomic<bool>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\atomic(2764,33):
+  see declaration of 'std::atomic<bool>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(49,72): warning C4251: 'CrowdControlRunner::effects': class 'std::unordered_map<std::string,std::shared_ptr<CCEffectBase>,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::shared_ptr<CCEffectBase>>>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(49,14):
+  see declaration of 'std::unordered_map<std::string,std::shared_ptr<CCEffectBase>,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::shared_ptr<CCEffectBase>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(50,70): warning C4251: 'CrowdControlRunner::streamUsers': class 'std::unordered_map<std::string,std::shared_ptr<StreamUser>,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::shared_ptr<StreamUser>>>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(50,14):
+  see declaration of 'std::unordered_map<std::string,std::shared_ptr<StreamUser>,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::shared_ptr<StreamUser>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(51,81): warning C4251: 'CrowdControlRunner::runningEffects': class 'std::unordered_map<std::string,std::shared_ptr<CCEffectInstanceTimed>,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::shared_ptr<CCEffectInstanceTimed>>>>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(51,14):
+  see declaration of 'std::unordered_map<std::string,std::shared_ptr<CCEffectInstanceTimed>,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::shared_ptr<CCEffectInstanceTimed>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(54,31): warning C4251: 'CrowdControlRunner::siteCallback': class 'std::function<void (void)>' needs to have dll-interface to be used by clients of class 'CrowdControlRunner'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(54,14):
+  see declaration of 'std::function<void (void)>'
+  
+  Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately. For example:
+  - add -D_WIN32_WINNT=0x0601 to the compiler command line; or
+  - add _WIN32_WINNT=0x0601 to your project's Preprocessor Definitions.
+  Assuming _WIN32_WINNT=0x0601 (i.e. Windows 7 target).
+F:\CrowdControlGenericPlugin\CrowdControl\include\ParameterOption.hpp(8,14): warning C4251: 'ParameterOption::id': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'ParameterOption'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\ParameterOption.hpp(9,14): warning C4251: 'ParameterOption::displayName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'ParameterOption'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\ParameterEntry.hpp(19,14): warning C4251: 'ParameterEntry::id': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'ParameterEntry'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\ParameterEntry.hpp(20,14): warning C4251: 'ParameterEntry::displayName': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'ParameterEntry'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\ParameterEntry.hpp(22,51): warning C4251: 'ParameterEntry::options': class 'std::unordered_map<std::string,ParameterOption,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,ParameterOption>>>' needs to have dll-interface to be used by clients of class 'ParameterEntry'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\ParameterEntry.hpp(22,7):
+  see declaration of 'std::unordered_map<std::string,ParameterOption,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,ParameterOption>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectParameters.hpp(13,50): warning C4251: 'CCEffectParameters::parameterEntries': class 'std::unordered_map<std::string,ParameterEntry,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,ParameterEntry>>>' needs to have dll-interface to be used by clients of class 'CCEffectParameters'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectParameters.hpp(13,7):
+  see declaration of 'std::unordered_map<std::string,ParameterEntry,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,ParameterEntry>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstance.hpp(13,32): warning C4251: 'CCEffectInstance::effect': class 'std::shared_ptr<CCEffectBase>' needs to have dll-interface to be used by clients of class 'CCEffectInstance'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(49,46):
+  see declaration of 'std::shared_ptr<CCEffectBase>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstance.hpp(14,30): warning C4251: 'CCEffectInstance::sender': class 'std::shared_ptr<StreamUser>' needs to have dll-interface to be used by clients of class 'CCEffectInstance'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CrowdControlRunner.hpp(50,46):
+  see declaration of 'std::shared_ptr<StreamUser>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstance.hpp(15,14): warning C4251: 'CCEffectInstance::id': class 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'CCEffectInstance'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\xstring(5127,29):
+  see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstanceParameters.hpp(11,47): warning C4251: 'CCEffectInstanceParameters::parameters': class 'std::unordered_map<std::string,std::string,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::string>>>' needs to have dll-interface to be used by clients of class 'CCEffectInstanceParameters'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstanceParameters.hpp(11,7):
+  see declaration of 'std::unordered_map<std::string,std::string,std::hash<std::string>,std::equal_to<std::string>,std::allocator<std::pair<const std::string,std::string>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstanceTimed.hpp(12,40): warning C4251: 'CCEffectInstanceTimed::startTime': class 'std::chrono::time_point<std::chrono::steady_clock,std::chrono::nanoseconds>' needs to have dll-interface to be used by clients of class 'CCEffectInstanceTimed'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\__msvc_chrono.hpp(665,51):
+  see declaration of 'std::chrono::time_point<std::chrono::steady_clock,std::chrono::nanoseconds>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstanceTimed.hpp(13,40): warning C4251: 'CCEffectInstanceTimed::pauseTime': class 'std::chrono::time_point<std::chrono::steady_clock,std::chrono::nanoseconds>' needs to have dll-interface to be used by clients of class 'CCEffectInstanceTimed'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\__msvc_chrono.hpp(665,51):
+  see declaration of 'std::chrono::time_point<std::chrono::steady_clock,std::chrono::nanoseconds>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\CCEffectInstanceTimed.hpp(14,28): warning C4251: 'CCEffectInstanceTimed::pausedDuration': class 'std::chrono::duration<__int64,std::milli>' needs to have dll-interface to be used by clients of class 'CCEffectInstanceTimed'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\__msvc_chrono.hpp(511,38):
+  see declaration of 'std::chrono::duration<__int64,std::milli>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamBuf.hpp(12,21): warning C4251: 'Streambuf::buffer': class 'std::basic_ostringstream<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of class 'Streambuf'
+  (compiling source file 'CrowdControlRunner.cpp')
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\iosfwd(241,35):
+  see declaration of 'std::basic_ostringstream<char,std::char_traits<char>,std::allocator<char>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\include\StreamBuf.hpp(106,33): warning C4251: 'Streambuf::queue': class 'std::queue<std::string,std::deque<std::string,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>>' needs to have dll-interface to be used by clients of class 'Streambuf'
+  (compiling source file 'CrowdControlRunner.cpp')
+  F:\CrowdControlGenericPlugin\CrowdControl\include\StreamBuf.hpp(106,14):
+  see declaration of 'std::queue<std::string,std::deque<std::string,std::allocator<std::basic_string<char,std::char_traits<char>,std::allocator<char>>>>>'
+  
+F:\CrowdControlGenericPlugin\CrowdControl\CrowdControlRunner.cpp(109,23): warning C4244: 'return': conversion from '_Rep' to 'long', possible loss of data
+F:\CrowdControlGenericPlugin\CrowdControl\CrowdControlRunner.cpp(109,23): warning C4244:         with
+F:\CrowdControlGenericPlugin\CrowdControl\CrowdControlRunner.cpp(109,23): warning C4244:         [
+F:\CrowdControlGenericPlugin\CrowdControl\CrowdControlRunner.cpp(109,23): warning C4244:             _Rep=__int64
+F:\CrowdControlGenericPlugin\CrowdControl\CrowdControlRunner.cpp(109,23): warning C4244:         ]
+     Creating library F:\CrowdControlGenericPlugin\x64\Debug\CrowdControl.lib and object F:\CrowdControlGenericPlugin\x64\Debug\CrowdControl.exp
+  CrowdControl.vcxproj -> F:\CrowdControlGenericPlugin\x64\Debug\CrowdControl.dll

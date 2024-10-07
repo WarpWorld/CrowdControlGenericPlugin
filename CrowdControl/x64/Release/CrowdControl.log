@@ -1,0 +1,32 @@
+﻿  CCEffect.cpp
+  CCEffectBase.cpp
+  CCEffectInstance.cpp
+  CCEffectInstanceParameters.cpp
+  CCEffectInstanceTimed.cpp
+  CCEffectParameters.cpp
+  CCEffectParametersTest.cpp
+  CCEffectTest.cpp
+  CCEffectTimed.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffect.cpp(6,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectBase.cpp(107,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectInstance.cpp(2,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectInstanceParameters.cpp(2,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectInstanceTimed.cpp(50,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectParameters.cpp(6,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectParametersTest.cpp(15,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectTest.cpp(12,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectTimed.cpp(24,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  CCEffectTimedTest.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\CCEffectTimedTest.cpp(38,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  CreateAndLinkDLLFile.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\CreateAndLinkDLLFile.cpp(68,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  CrowdControlRunner.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\CrowdControlRunner.cpp(1032,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  RPC.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\RPC.cpp(151,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  ServerRequests.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\ServerRequests.cpp(113,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  StreamBuf.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\StreamBuf.cpp(6,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?
+  StreamUser.cpp
+F:\CrowdControlGenericPlugin\CrowdControl\StreamUser.cpp(44,1): error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "pch.h"' to your source?

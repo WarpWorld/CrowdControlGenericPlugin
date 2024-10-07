@@ -1,6 +1,6 @@
-#include "CCEffectParameters.hpp"
-#include "CCEffectParametersTest.hpp"
-#include "StreamBuf.hpp"
+#include "include/CCEffectParameters.hpp"
+#include "include/CCEffectParametersTest.hpp"
+#include "include/StreamBuf.hpp"
 #include <iostream>
 
 void CCEffectParametersTest::SetupParams() {

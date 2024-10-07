@@ -1,5 +1,5 @@
-#include "CCEffectTest.hpp"
-#include "StreamBuf.hpp"
+#include "include/CCEffectTest.hpp"
+#include "include/StreamBuf.hpp"
 
 CCEffectTest::CCEffectTest() {
 

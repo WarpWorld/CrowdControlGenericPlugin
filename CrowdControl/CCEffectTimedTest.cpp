@@ -1,5 +1,5 @@
-#include "CCEffectTimedTest.hpp"
-#include "StreamBuf.hpp"
+#include "include/CCEffectTimedTest.hpp"
+#include "include/StreamBuf.hpp"
 
 CCEffectTimedTest::CCEffectTimedTest() {
 
