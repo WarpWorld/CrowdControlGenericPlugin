@@ -15,6 +15,7 @@
 #include <cpprest/http_client.h>
 #include <queue>
 #include <utility>
+#include "pch.h"
 
 using namespace utility;
 using namespace web;

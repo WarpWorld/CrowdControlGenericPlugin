@@ -1,5 +1,6 @@
 #pragma once
 #include "include/CCEffectTimed.hpp"
+#include "pch.h"
 
 CCEffectTimed::CCEffectTimed() {
 

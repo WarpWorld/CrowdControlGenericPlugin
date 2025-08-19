@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include "pch.h"
 
 int CCEffectInstanceTimed::TimeRemaining() {
 	if (timedEffect->paused) {

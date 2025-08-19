@@ -5,6 +5,7 @@
 #include "include/ServerRequests.hpp"
 #include "include/RPC.hpp"
 #include <nlohmann/json.hpp>
+#include "pch.h"
 
 CCEffectBase::CCEffectBase() {
 

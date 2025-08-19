@@ -1,5 +1,6 @@
 #include "include/CCEffectTest.hpp"
 #include "include/StreamBuf.hpp"
+#include "pch.h"
 
 CCEffectTest::CCEffectTest() {
 

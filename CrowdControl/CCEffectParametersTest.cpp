@@ -2,6 +2,7 @@
 #include "include/CCEffectParametersTest.hpp"
 #include "include/StreamBuf.hpp"
 #include <iostream>
+#include "pch.h"
 
 void CCEffectParametersTest::SetupParams() {
 	

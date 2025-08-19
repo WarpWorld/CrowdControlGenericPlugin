@@ -3,6 +3,7 @@
 #include <random>
 #include <chrono>
 #include <nlohmann/json.hpp>
+#include "pch.h"
 
 void RPC::Success(CCEffectInstance& instance) {
 	Send(instance, "success");
