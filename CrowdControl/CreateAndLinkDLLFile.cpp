@@ -1,5 +1,3 @@
-#pragma once
-
 #include "string.h"
 #include "CreateAndLinkDLLFile.h"
 #include "CrowdControlRunner.hpp"
@@ -41,7 +39,7 @@ void AddParameterOption(char* name, char* paramName, char** options) {
 	CrowdControlRunner::AddParameterOption(name, paramName, options);
 }
 
-void AddParamaterMinMax(char* name, char* paramName, int min, int max) {
+void AddParameterMinMax(char* name, char* paramName, int min, int max) {
 	CrowdControlRunner::AddParameterMinMax(name, paramName, min, max);
 }
 
@@ -51,6 +49,27 @@ void EffectSuccess(char * id) {
 
 void EffectFailure(char * id) {
 	CrowdControlRunner::Fail(id);
+}
+
+// JWT Token functions for Unreal access
+char* GetOriginID() {
+	return CrowdControlRunner::GetOriginIDForUnreal();
+}
+
+char* GetProfileType() {
+	return CrowdControlRunner::GetProfileTypeForUnreal();
+}
+
+char* GetInteractionURL() {
+	return CrowdControlRunner::GetInteractionURLForUnreal();
+}
+
+char* GetStreamerName() {
+	return CrowdControlRunner::GetStreamerNameForUnreal();
+}
+
+bool IsJWTTokenValid() {
+	return CrowdControlRunner::IsJWTTokenValid();
 }
 
 //Exported method that adds a vector4 to a given vector4 and returns the sum.

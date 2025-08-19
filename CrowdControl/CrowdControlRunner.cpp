@@ -343,6 +343,202 @@ void CrowdControlRunner::ClearToken() {
 	SaveToken();
 }
 
+// JWT token decoding methods
+static std::string base64_decode(const std::string& encoded_string) {
+	const std::string base64_chars = 
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
+
+	std::string decoded;
+	int val = 0, valb = -8;
+	for (char c : encoded_string) {
+		if (c == '=') break;
+		if (c == '-') c = '+';
+		if (c == '_') c = '/';
+		
+		val = (val << 6) + base64_chars.find(c);
+		valb += 6;
+		if (valb >= 0) {
+			decoded.push_back(char((val >> valb) & 0xFF));
+			valb -= 8;
+		}
+	}
+	return decoded;
+}
+
+static std::string profileType;
+static std::string originID;
+
+bool CrowdControlRunner::DecodeJWTToken() {
+	if (CrowdControlRunner::token.empty()) {
+		return false;
+	}
+
+	try {
+		// Split JWT token into parts (header.payload.signature)
+		size_t firstDot = CrowdControlRunner::token.find('.');
+		size_t secondDot = CrowdControlRunner::token.find('.', firstDot + 1);
+		
+		if (firstDot == std::string::npos || secondDot == std::string::npos) {
+			return false;
+		}
+
+		// Extract the payload part (second part)
+		std::string payload = CrowdControlRunner::token.substr(firstDot + 1, secondDot - firstDot - 1);
+		
+		// Add padding if needed for base64 decoding
+		while (payload.length() % 4 != 0) {
+			payload += '=';
+		}
+
+		// Decode base64 payload
+		std::string decodedPayload = base64_decode(payload);
+		
+		// Parse JSON payload
+		nlohmann::json payloadJson = nlohmann::json::parse(decodedPayload);
+		
+		// Extract profileType and originID
+		if (payloadJson.contains("profileType") && payloadJson.contains("originID")) {
+			profileType = payloadJson["profileType"].get<std::string>();
+			originID = payloadJson["originID"].get<std::string>();
+			return true;
+		}
+		
+		return false;
+	}
+	catch (const std::exception& e) {
+		std::cout << "Error decoding JWT token: " << e.what() << std::endl;
+		return false;
+	}
+}
+
+std::string CrowdControlRunner::GetProfileType() {
+	if (profileType.empty()) {
+		DecodeJWTToken();
+	}
+	return profileType;
+}
+
+std::string CrowdControlRunner::GetOriginID() {
+	if (originID.empty()) {
+		DecodeJWTToken();
+	}
+	return originID;
+}
+
+std::string CrowdControlRunner::GetInteractionURL() {
+	if (profileType.empty() || originID.empty()) {
+		if (!DecodeJWTToken()) {
+			return "";
+		}
+	}
+	
+	return "https://interact.crowdcontrol.live/#/" + profileType + "/" + originID;
+}
+
+void CrowdControlRunner::TestJWTDecoding() {
+	if (DecodeJWTToken()) {
+		std::cout << "JWT Token decoded successfully!" << std::endl;
+		std::cout << "Profile Type: " << GetProfileType() << std::endl;
+		std::cout << "Origin ID: " << GetOriginID() << std::endl;
+		std::cout << "Interaction URL: " << GetInteractionURL() << std::endl;
+	} else {
+		std::cout << "Failed to decode JWT token or token is empty." << std::endl;
+	}
+}
+
+// Unreal-accessible functions for JWT data (DLL exports)
+char* CrowdControlRunner::GetOriginIDForUnreal() {
+	if (originID.empty()) {
+		DecodeJWTToken();
+	}
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[originID.length() + 1];
+	strcpy_s(result, originID.length() + 1, originID.c_str());
+	return result;
+}
+
+char* CrowdControlRunner::GetProfileTypeForUnreal() {
+	if (profileType.empty()) {
+		DecodeJWTToken();
+	}
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[profileType.length() + 1];
+	strcpy_s(result, profileType.length() + 1, profileType.c_str());
+	return result;
+}
+
+char* CrowdControlRunner::GetInteractionURLForUnreal() {
+	std::string url = GetInteractionURL();
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[url.length() + 1];
+	strcpy_s(result, url.length() + 1, url.c_str());
+	return result;
+}
+
+char* CrowdControlRunner::GetStreamerNameForUnreal() {
+	if (profileType.empty() || originID.empty()) {
+		DecodeJWTToken();
+	}
+	
+	// Extract streamer name from JWT if available
+	std::string streamerName = "";
+	try {
+		if (!CrowdControlRunner::token.empty()) {
+			size_t firstDot = CrowdControlRunner::token.find('.');
+			size_t secondDot = CrowdControlRunner::token.find('.', firstDot + 1);
+			
+			if (firstDot != std::string::npos && secondDot != std::string::npos) {
+				std::string payload = CrowdControlRunner::token.substr(firstDot + 1, secondDot - firstDot - 1);
+				while (payload.length() % 4 != 0) {
+					payload += '=';
+				}
+				
+				std::string decodedPayload = base64_decode(payload);
+				nlohmann::json payloadJson = nlohmann::json::parse(decodedPayload);
+				
+				if (payloadJson.contains("name")) {
+					streamerName = payloadJson["name"].get<std::string>();
+				}
+			}
+		}
+	}
+	catch (const std::exception& e) {
+		std::cout << "Error extracting streamer name: " << e.what() << std::endl;
+	}
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[streamerName.length() + 1];
+	strcpy_s(result, streamerName.length() + 1, streamerName.c_str());
+	return result;
+}
+
+bool CrowdControlRunner::IsJWTTokenValid() {
+	if (CrowdControlRunner::token.empty()) {
+		return false;
+	}
+	
+	try {
+		// Check if token has valid structure (header.payload.signature)
+		size_t firstDot = CrowdControlRunner::token.find('.');
+		size_t secondDot = CrowdControlRunner::token.find('.', firstDot + 1);
+		
+		if (firstDot == std::string::npos || secondDot == std::string::npos) {
+			return false;
+		}
+		
+		// Try to decode and parse the payload
+		return DecodeJWTToken();
+	}
+	catch (const std::exception& e) {
+		return false;
+	}
+}
+
 void CrowdControlRunner::ChooseSite() {
 	std::string loginPlatform = "";
 

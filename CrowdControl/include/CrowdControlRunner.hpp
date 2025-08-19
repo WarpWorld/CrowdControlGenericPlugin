@@ -66,6 +66,22 @@ public:
 	static void SaveToken();
 	static void ClearToken();
 
+	// JWT token decoding methods
+	static std::string GetInteractionURL();
+	static std::string GetProfileType();
+	static std::string GetOriginID();
+	static bool DecodeJWTToken();
+
+	// Test method for JWT functionality
+	static void TestJWTDecoding();
+
+	// Unreal-accessible functions for JWT data (DLL exports)
+	static char* GetOriginIDForUnreal();
+	static char* GetProfileTypeForUnreal();
+	static char* GetInteractionURLForUnreal();
+	static char* GetStreamerNameForUnreal();
+	static bool IsJWTTokenValid();
+
 	static bool StopEffect(std::string effectID);
 	static bool IsRunning(std::string name);
 	static bool ResetEffect(std::string effectID);

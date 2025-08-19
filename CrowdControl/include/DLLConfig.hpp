@@ -1,7 +1,10 @@
 #pragma once
 
+// Define CC_API for proper DLL export/import
 #ifdef CC_EXPORTS
-#define CC_API __declspec(dllexport)
+    // When building the DLL, export the functions
+    #define CC_API __declspec(dllexport)
 #else
-#define CC_API __declspec(dllimport)
+    // When using the DLL, import the functions
+    #define CC_API __declspec(dllimport)
 #endif
