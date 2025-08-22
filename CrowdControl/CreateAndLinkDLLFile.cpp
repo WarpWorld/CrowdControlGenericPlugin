@@ -21,27 +21,27 @@ float getCircleArea(float radius)
 	return float(3.1416f * (radius * radius));
 }
 
-void AddNewBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
+void AddNewBasicEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
 {
-	CrowdControlRunner::AddBasicEffect(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	CrowdControlRunner::AddBasicEffect(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 }
 
-void AddNewTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration)
+void AddNewTimedEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration)
 {
-	CrowdControlRunner::AddTimedEffect(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
+	CrowdControlRunner::AddTimedEffect(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
 }
 
-void AddNewParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
+void AddNewParameterEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
 {
-	CrowdControlRunner::AddParameterEffect(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	CrowdControlRunner::AddParameterEffect(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 }
 
-void AddParameterOption(char* name, char* paramName, char** options) {
-	CrowdControlRunner::AddParameterOption(name, paramName, options);
+void AddParameterOption(char* id, char* paramName, char** options) {
+	CrowdControlRunner::AddParameterOption(id, paramName, options);
 }
 
-void AddParameterMinMax(char* name, char* paramName, int min, int max) {
-	CrowdControlRunner::AddParameterMinMax(name, paramName, min, max);
+void AddParameterMinMax(char* id, char* paramName, int min, int max) {
+	CrowdControlRunner::AddParameterMinMax(id, paramName, min, max);
 }
 
 void EffectSuccess(char * id) {

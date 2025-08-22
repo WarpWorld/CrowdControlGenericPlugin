@@ -27,9 +27,10 @@ int MoralityValue(int value) {
 	return 0;
 }
 
-void CCEffectBase::Setup(char* n, char* d, int pr, int ret, float retDelay, float penDelay, bool sell, bool vis, bool noPool, int moral, int ord, char** cats) {
+void CCEffectBase::Setup(char* id, char* n, char* d, int pr, int ret, float retDelay, float penDelay, bool sell, bool vis, bool noPool, int moral, int ord, char** cats) {
 	CCEffectBase::displayName = std::string(n);
-	CCEffectBase::AssignName(displayName);
+	CCEffectBase::id = id;
+	//CCEffectBase::AssignName(displayName); //This was getting rid of _ in IDs. Also display name and ID dont always match.
 	CCEffectBase::description = std::string(d);
 	CCEffectBase::price = pr;
 

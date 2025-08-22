@@ -887,7 +887,21 @@ void CrowdControlRunner::Disconnect() {
 	CrowdControlRunner::StopAllEffects();
 	CrowdControlRunner::StopGameSession();
 	CrowdControlRunner::connected = false;
-	ccSocket->close(websocket::close_code::normal);
+	//Prevent unhandled exception 
+	try {
+		websocket::close_reason cr{ websocket::close_code::normal };
+		ccSocket->close(cr);
+	}
+	catch (boost::system::system_error const& se) {
+		auto ec = se.code();
+		if (ec != websocket::error::closed &&
+			ec != boost::asio::error::operation_aborted
+#if defined(BOOST_ASIO_HAS_SSL)
+			&& ec != boost::asio::ssl::error::stream_truncated
+#endif
+			) {
+		}
+	}
 	CrowdControlRunner::commandCode = 1;
 }
 
@@ -1032,6 +1046,19 @@ char* CrowdControlRunner::EngineEffect() {
 		nlohmann::json effectManifest;
 		effectManifest["name"] = effect->effect->displayName;
 		effectManifest["id"] = effect->id;
+		CCEffectInstanceTimed* timedEffect = dynamic_cast<CCEffectInstanceTimed*>(effect.get());
+		CCEffectInstanceParameters* paramEffect = dynamic_cast<CCEffectInstanceParameters*>(effect.get());
+
+		if (timedEffect) {
+			effectManifest["duration"] = timedEffect->runTime;
+		}
+		else if (paramEffect) {
+			if (paramEffect->quantity > 0)
+			{
+				effectManifest["quantity"] = paramEffect->quantity;
+			}
+			effectManifest["params"] = paramEffect->parameters;
+		}
 
 		std::string jsonString = effectManifest.dump(); // Convert JSON object to string
 
@@ -1046,37 +1073,37 @@ char* CrowdControlRunner::EngineEffect() {
 	return charArray;
 }
 
-void CrowdControlRunner::AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
+void CrowdControlRunner::AddBasicEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
 	std::shared_ptr<CCEffectBase> effect = std::make_shared<CCEffectTest>();
-	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	effect->Setup(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 	std::cout << "Added Effect " << effect->displayName;
 	AddEffect(effect);
 }
 
-void CrowdControlRunner::AddTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration) {
+void CrowdControlRunner::AddTimedEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration) {
 	std::shared_ptr<CCEffectTimed> timedEffect = std::make_shared<CCEffectTimedTest>();
-	timedEffect->SetupTimed(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
+	timedEffect->SetupTimed(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
 	std::cout << "Added Timed Effect " << timedEffect->displayName;
 	AddEffect(timedEffect);
 }
 
-void CrowdControlRunner::AddParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
+void CrowdControlRunner::AddParameterEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
 	std::shared_ptr<CCEffectParameters> effect = std::make_shared<CCEffectParametersTest>();
-	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	effect->Setup(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 	std::cout << "Added Parameter Effect " << effect->displayName;
 	AddEffect(effect);
 }
 
-void CrowdControlRunner::AddParameterOption(char* name, char* paramName, char** options) {
-	std::string effectID = DisplayNameToID(name);
+void CrowdControlRunner::AddParameterOption(char* id, char* paramName, char** options) {
+	std::string effectID = id;//DisplayNameToID(name);
 	std::shared_ptr<CCEffectBase> effect = CrowdControlRunner::effects[effectID];
 	std::shared_ptr<CCEffectParameters> effectParameters = std::dynamic_pointer_cast<CCEffectParameters>(effect);
 
 	effectParameters->AddOptionsParameter(paramName, options);
 }
 
-void CrowdControlRunner::AddParameterMinMax(char* name, char* paramName, int min, int max) {
-	std::string effectID = DisplayNameToID(name);
+void CrowdControlRunner::AddParameterMinMax(char* id, char* paramName, int min, int max) {
+	std::string effectID = id;//DisplayNameToID(name);
 	std::shared_ptr<CCEffectBase> effect = CrowdControlRunner::effects[effectID];
 	std::shared_ptr<CCEffectParameters> effectParameters = std::dynamic_pointer_cast<CCEffectParameters>(effect);
 
