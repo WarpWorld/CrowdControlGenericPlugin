@@ -18,11 +18,13 @@ public:
 	int CommandID();
 	void ResetCommandCode();
 	char* TestCharArray();
-	static void AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
-	static void AddTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration);
-	static void AddParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
+	static void AddBasicEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
+	static void AddTimedEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration);
+	static void AddParameterEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
 	static void AddParameterOption(char* name, char* paramName, char** options);
 	static void AddParameterMinMax(char* name, char* paramName, int min, int max);
+
+	static void SetGameNameAndPackID(char* name, char* packID);
 
 	static void Success(char * name);
 	static void Fail(char * name);
@@ -66,6 +68,22 @@ public:
 	static void SaveToken();
 	static void ClearToken();
 
+	// JWT token decoding methods
+	static std::string GetInteractionURL();
+	static std::string GetProfileType();
+	static std::string GetOriginID();
+	static bool DecodeJWTToken();
+
+	// Test method for JWT functionality
+	static void TestJWTDecoding();
+
+	// Unreal-accessible functions for JWT data (DLL exports)
+	static char* GetOriginIDForUnreal();
+	static char* GetProfileTypeForUnreal();
+	static char* GetInteractionURLForUnreal();
+	static char* GetStreamerNameForUnreal();
+	static bool IsJWTTokenValid();
+
 	static bool StopEffect(std::string effectID);
 	static bool IsRunning(std::string name);
 	static bool ResetEffect(std::string effectID);
@@ -81,6 +99,12 @@ public:
 
 	static void TestEffect(std::string id, std::map<std::string, std::string> paramPairs = std::map<std::string, std::string>());
 	static void TestEffectRemotely(std::string id, std::map<std::string, std::string> paramPairs = std::map<std::string, std::string>());
+
+	// Custom Effects API
+	static void UploadCustomEffects(const char* effectsJson);
+	static void ClearCustomEffects();
+	static void DeleteCustomEffects(const char* effectIDsJson);
+	static char* GetCustomEffects();
 
 	static std::string GetMessage() {
 		std::string temp = CrowdControlRunner::extMessage;

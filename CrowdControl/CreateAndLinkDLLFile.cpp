@@ -1,8 +1,7 @@
-#pragma once
-
 #include "string.h"
 #include "CreateAndLinkDLLFile.h"
-#include "CrowdControlRunner.hpp"
+#include "include/CrowdControlRunner.hpp"
+#include "pch.h"
 
 //Exported method that invertes a given boolean.
 bool getInvertedBool(bool boolState)
@@ -22,27 +21,27 @@ float getCircleArea(float radius)
 	return float(3.1416f * (radius * radius));
 }
 
-void AddNewBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
+void AddNewBasicEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
 {
-	CrowdControlRunner::AddBasicEffect(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	CrowdControlRunner::AddBasicEffect(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 }
 
-void AddNewTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration)
+void AddNewTimedEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration)
 {
-	CrowdControlRunner::AddTimedEffect(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
+	CrowdControlRunner::AddTimedEffect(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
 }
 
-void AddNewParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
+void AddNewParameterEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray)
 {
-	CrowdControlRunner::AddParameterEffect(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	CrowdControlRunner::AddParameterEffect(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 }
 
-void AddParameterOption(char* name, char* paramName, char** options) {
-	CrowdControlRunner::AddParameterOption(name, paramName, options);
+void AddParameterOption(char* id, char* paramName, char** options) {
+	CrowdControlRunner::AddParameterOption(id, paramName, options);
 }
 
-void AddParamaterMinMax(char* name, char* paramName, int min, int max) {
-	CrowdControlRunner::AddParameterMinMax(name, paramName, min, max);
+void AddParameterMinMax(char* id, char* paramName, int min, int max) {
+	CrowdControlRunner::AddParameterMinMax(id, paramName, min, max);
 }
 
 void EffectSuccess(char * id) {
@@ -51,6 +50,27 @@ void EffectSuccess(char * id) {
 
 void EffectFailure(char * id) {
 	CrowdControlRunner::Fail(id);
+}
+
+// JWT Token functions for Unreal access
+char* GetOriginID() {
+	return CrowdControlRunner::GetOriginIDForUnreal();
+}
+
+char* GetProfileType() {
+	return CrowdControlRunner::GetProfileTypeForUnreal();
+}
+
+char* GetInteractionURL() {
+	return CrowdControlRunner::GetInteractionURLForUnreal();
+}
+
+char* GetStreamerName() {
+	return CrowdControlRunner::GetStreamerNameForUnreal();
+}
+
+bool IsJWTTokenValid() {
+	return CrowdControlRunner::IsJWTTokenValid();
 }
 
 //Exported method that adds a vector4 to a given vector4 and returns the sum.
@@ -64,4 +84,21 @@ float *getVector4(float x, float y, float z, float w)
 	modifiedVector4[3] = w + 4.0F;
 
 	return (float*)modifiedVector4;
+}
+
+// Custom Effects API exports
+void UploadCustomEffects(const char* effectsJson) {
+	CrowdControlRunner::UploadCustomEffects(effectsJson);
+}
+
+void ClearCustomEffects() {
+	CrowdControlRunner::ClearCustomEffects();
+}
+
+void DeleteCustomEffects(const char* effectIDsJson) {
+	CrowdControlRunner::DeleteCustomEffects(effectIDsJson);
+}
+
+char* GetCustomEffects() {
+	return CrowdControlRunner::GetCustomEffects();
 }

@@ -1,4 +1,4 @@
-#include "CrowdControlRunner.hpp"
+#include "include/CrowdControlRunner.hpp"
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
@@ -25,19 +25,23 @@
 #include <conio.h>
 #include <random>
 #include <atomic>
+#include <cstring>
+#include <iomanip>
+#include <ctime>
 
-#include "CCEffectBase.hpp"
-#include "CCEffect.hpp"
-#include "CCEffectTimed.hpp"
-#include "CCEffectParameters.hpp"
-#include "CCEffectInstanceParameters.hpp"
-#include "CCEffectTest.hpp"
-#include "CCEffectTimedTest.hpp"
-#include "CCEffectParametersTest.hpp"
-#include "EffectResult.hpp"
-#include "RPC.hpp"
-#include "StreamBuf.hpp"
-#include "ServerRequests.hpp"
+#include "include/CCEffectBase.hpp"
+#include "include/CCEffect.hpp"
+#include "include/CCEffectTimed.hpp"
+#include "include/CCEffectParameters.hpp"
+#include "include/CCEffectInstanceParameters.hpp"
+#include "include/CCEffectTest.hpp"
+#include "include/CCEffectTimedTest.hpp"
+#include "include/CCEffectParametersTest.hpp"
+#include "include/EffectResult.hpp"
+#include "include/RPC.hpp"
+#include "include/StreamBuf.hpp"
+#include "include/ServerRequests.hpp"
+#include "pch.h"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -68,6 +72,7 @@ std::unordered_map<std::string, std::queue<std::shared_ptr<CCEffectInstanceTimed
 std::chrono::steady_clock::time_point program_start = std::chrono::steady_clock::now();
 std::chrono::steady_clock::time_point effect_delay = std::chrono::steady_clock::now();
 std::chrono::steady_clock::time_point update_time = std::chrono::steady_clock::now();
+std::chrono::steady_clock::time_point last_ping_time = std::chrono::steady_clock::now();
 
 std::vector<std::string> effectIDs;
 std::vector<std::string> effectInstanceIDs;
@@ -343,6 +348,202 @@ void CrowdControlRunner::ClearToken() {
 	SaveToken();
 }
 
+// JWT token decoding methods
+static std::string base64_decode(const std::string& encoded_string) {
+	const std::string base64_chars = 
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
+
+	std::string decoded;
+	int val = 0, valb = -8;
+	for (char c : encoded_string) {
+		if (c == '=') break;
+		if (c == '-') c = '+';
+		if (c == '_') c = '/';
+		
+		val = (val << 6) + base64_chars.find(c);
+		valb += 6;
+		if (valb >= 0) {
+			decoded.push_back(char((val >> valb) & 0xFF));
+			valb -= 8;
+		}
+	}
+	return decoded;
+}
+
+static std::string profileType;
+static std::string originID;
+
+bool CrowdControlRunner::DecodeJWTToken() {
+	if (CrowdControlRunner::token.empty()) {
+		return false;
+	}
+
+	try {
+		// Split JWT token into parts (header.payload.signature)
+		size_t firstDot = CrowdControlRunner::token.find('.');
+		size_t secondDot = CrowdControlRunner::token.find('.', firstDot + 1);
+		
+		if (firstDot == std::string::npos || secondDot == std::string::npos) {
+			return false;
+		}
+
+		// Extract the payload part (second part)
+		std::string payload = CrowdControlRunner::token.substr(firstDot + 1, secondDot - firstDot - 1);
+		
+		// Add padding if needed for base64 decoding
+		while (payload.length() % 4 != 0) {
+			payload += '=';
+		}
+
+		// Decode base64 payload
+		std::string decodedPayload = base64_decode(payload);
+		
+		// Parse JSON payload
+		nlohmann::json payloadJson = nlohmann::json::parse(decodedPayload);
+		
+		// Extract profileType and originID
+		if (payloadJson.contains("profileType") && payloadJson.contains("originID")) {
+			profileType = payloadJson["profileType"].get<std::string>();
+			originID = payloadJson["originID"].get<std::string>();
+			return true;
+		}
+		
+		return false;
+	}
+	catch (const std::exception& e) {
+		std::cout << "Error decoding JWT token: " << e.what() << std::endl;
+		return false;
+	}
+}
+
+std::string CrowdControlRunner::GetProfileType() {
+	if (profileType.empty()) {
+		DecodeJWTToken();
+	}
+	return profileType;
+}
+
+std::string CrowdControlRunner::GetOriginID() {
+	if (originID.empty()) {
+		DecodeJWTToken();
+	}
+	return originID;
+}
+
+std::string CrowdControlRunner::GetInteractionURL() {
+	if (profileType.empty() || originID.empty()) {
+		if (!DecodeJWTToken()) {
+			return "";
+		}
+	}
+	
+	return "https://interact.crowdcontrol.live/#/" + profileType + "/" + originID;
+}
+
+void CrowdControlRunner::TestJWTDecoding() {
+	if (DecodeJWTToken()) {
+		std::cout << "JWT Token decoded successfully!" << std::endl;
+		std::cout << "Profile Type: " << GetProfileType() << std::endl;
+		std::cout << "Origin ID: " << GetOriginID() << std::endl;
+		std::cout << "Interaction URL: " << GetInteractionURL() << std::endl;
+	} else {
+		std::cout << "Failed to decode JWT token or token is empty." << std::endl;
+	}
+}
+
+// Unreal-accessible functions for JWT data (DLL exports)
+char* CrowdControlRunner::GetOriginIDForUnreal() {
+	if (originID.empty()) {
+		DecodeJWTToken();
+	}
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[originID.length() + 1];
+	strcpy_s(result, originID.length() + 1, originID.c_str());
+	return result;
+}
+
+char* CrowdControlRunner::GetProfileTypeForUnreal() {
+	if (profileType.empty()) {
+		DecodeJWTToken();
+	}
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[profileType.length() + 1];
+	strcpy_s(result, profileType.length() + 1, profileType.c_str());
+	return result;
+}
+
+char* CrowdControlRunner::GetInteractionURLForUnreal() {
+	std::string url = GetInteractionURL();
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[url.length() + 1];
+	strcpy_s(result, url.length() + 1, url.c_str());
+	return result;
+}
+
+char* CrowdControlRunner::GetStreamerNameForUnreal() {
+	if (profileType.empty() || originID.empty()) {
+		DecodeJWTToken();
+	}
+	
+	// Extract streamer name from JWT if available
+	std::string streamerName = "";
+	try {
+		if (!CrowdControlRunner::token.empty()) {
+			size_t firstDot = CrowdControlRunner::token.find('.');
+			size_t secondDot = CrowdControlRunner::token.find('.', firstDot + 1);
+			
+			if (firstDot != std::string::npos && secondDot != std::string::npos) {
+				std::string payload = CrowdControlRunner::token.substr(firstDot + 1, secondDot - firstDot - 1);
+				while (payload.length() % 4 != 0) {
+					payload += '=';
+				}
+				
+				std::string decodedPayload = base64_decode(payload);
+				nlohmann::json payloadJson = nlohmann::json::parse(decodedPayload);
+				
+				if (payloadJson.contains("name")) {
+					streamerName = payloadJson["name"].get<std::string>();
+				}
+			}
+		}
+	}
+	catch (const std::exception& e) {
+		std::cout << "Error extracting streamer name: " << e.what() << std::endl;
+	}
+	
+	// Allocate memory for Unreal (caller is responsible for freeing)
+	char* result = new char[streamerName.length() + 1];
+	strcpy_s(result, streamerName.length() + 1, streamerName.c_str());
+	return result;
+}
+
+bool CrowdControlRunner::IsJWTTokenValid() {
+	if (CrowdControlRunner::token.empty()) {
+		return false;
+	}
+	
+	try {
+		// Check if token has valid structure (header.payload.signature)
+		size_t firstDot = CrowdControlRunner::token.find('.');
+		size_t secondDot = CrowdControlRunner::token.find('.', firstDot + 1);
+		
+		if (firstDot == std::string::npos || secondDot == std::string::npos) {
+			return false;
+		}
+		
+		// Try to decode and parse the payload
+		return DecodeJWTToken();
+	}
+	catch (const std::exception& e) {
+		return false;
+	}
+}
+
 void CrowdControlRunner::ChooseSite() {
 	std::string loginPlatform = "";
 
@@ -476,8 +677,36 @@ void ReceiveEffectRequest(nlohmann::json payload, bool test) {
 
 void ProcessJSONMessage(std::string message) {
 	std::cout << "RECEIVED: " << message << "\n";
+	
+	// Check if message is just a plain "pong" string (keepalive response)
+	std::string trimmedMessage = message;
+	// Trim whitespace
+	trimmedMessage.erase(0, trimmedMessage.find_first_not_of(" \t\n\r"));
+	trimmedMessage.erase(trimmedMessage.find_last_not_of(" \t\n\r") + 1);
+	
+	if (trimmedMessage == "pong") {
+		std::cout << "[PONG] Received pong response, ignoring." << std::endl;
+		return;
+	}
+	
 	nlohmann::json jsonObj = nlohmann::json::parse(message);
-	std::string messageType = jsonObj["type"];
+	
+	// Check for pong message in JSON format (can be in "action" or "type" field)
+	std::string action = "";
+	std::string messageType = "";
+	
+	if (jsonObj.contains("action")) {
+		action = jsonObj["action"].get<std::string>();
+	}
+	if (jsonObj.contains("type")) {
+		messageType = jsonObj["type"].get<std::string>();
+	}
+	
+	// Ignore pong messages in JSON format - they're just keepalive responses
+	if (action == "pong" || messageType == "pong") {
+		std::cout << "[PONG] Received pong response (JSON), ignoring." << std::endl;
+		return;
+	}
 
 	std::wstring payloadWStr;
 	nlohmann::json payload = nullptr;
@@ -523,6 +752,37 @@ void DoRead() {
 	}
 
 	update_time = std::chrono::steady_clock::now();
+
+	// Send WebSocket ping every 1 minute (60,000 milliseconds) to keep connection alive
+	// AWS API Gateway WebSockets have a 10-minute idle timeout, so 1 minute ensures we stay connected
+	if (ccSocket != nullptr && CrowdControlRunner::connected) {
+		long timeSinceLastPing = GetMillisecondsSinceOffset(last_ping_time);
+		const long PING_INTERVAL_MS = 1 * 60 * 1000; // 1 minute in milliseconds
+		
+		if (timeSinceLastPing >= PING_INTERVAL_MS) {
+			try {
+				// Send JSON ping message for AWS API Gateway compatibility
+				// AWS API Gateway WebSockets handle text messages more reliably than control frames
+				nlohmann::json pingObj;
+				pingObj["action"] = "ping";
+				ccSocket->write(net::buffer(pingObj.dump()));
+				last_ping_time = std::chrono::steady_clock::now();
+				
+				// Log ping with timestamp for verification
+				auto now = std::chrono::system_clock::now();
+				auto time_t = std::chrono::system_clock::to_time_t(now);
+				char timeStr[64];
+				std::tm timeInfo;
+				localtime_s(&timeInfo, &time_t);
+				std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &timeInfo);
+				std::cout << "[PING] Sent WebSocket ping at " << timeStr 
+					<< " to keep connection alive (AWS API Gateway)" << std::endl;
+			}
+			catch (const std::exception& e) {
+				std::cerr << "Error sending WebSocket ping: " << e.what() << std::endl;
+			}
+		}
+	}
 
 	if (ccSocket->next_layer().next_layer().available() > 0) {
 		beast::flat_buffer buffer;
@@ -678,6 +938,9 @@ void CrowdControlRunner::Connect() {
 	ccSocket->handshake(host, "/");
 
 	CrowdControlRunner::connected = true;
+	
+	// Initialize ping timer when connection is established
+	last_ping_time = std::chrono::steady_clock::now();
 
 	SendHello();
 
@@ -690,7 +953,21 @@ void CrowdControlRunner::Disconnect() {
 	CrowdControlRunner::StopAllEffects();
 	CrowdControlRunner::StopGameSession();
 	CrowdControlRunner::connected = false;
-	ccSocket->close(websocket::close_code::normal);
+	//Prevent unhandled exception 
+	try {
+		websocket::close_reason cr{ websocket::close_code::normal };
+		ccSocket->close(cr);
+	}
+	catch (boost::system::system_error const& se) {
+		auto ec = se.code();
+		if (ec != websocket::error::closed &&
+			ec != boost::asio::error::operation_aborted
+#if defined(BOOST_ASIO_HAS_SSL)
+			&& ec != boost::asio::ssl::error::stream_truncated
+#endif
+			) {
+		}
+	}
 	CrowdControlRunner::commandCode = 1;
 }
 
@@ -801,19 +1078,38 @@ void CrowdControlRunner::ResetCommandCode() {
 
 char* CrowdControlRunner::TestCharArray() {
 	char* charArray = new char[2000];
+	// Initialize the entire buffer to null
+	memset(charArray, 0, 2000);
 
 	if (!Streambuf::queue.empty()) {
-		charArray = new char[2000];
 		std::string tempStr = Streambuf::queue.front();
 		Streambuf::queue.pop();
-		strcpy_s(charArray, 2000, tempStr.c_str());
+		
+		// Ensure we don't overflow the buffer
+		size_t strLen = tempStr.length();
+		if (strLen >= 2000) {
+			strLen = 1999; // Leave room for null terminator
+		}
+		
+		if (strLen > 0) {
+			strncpy_s(charArray, 2000, tempStr.c_str(), strLen);
+			charArray[strLen] = '\0'; // Ensure null termination
+		}
+		else {
+			charArray[0] = '\0';
+		}
 	}
 	else {
 		charArray[0] = '\0';
-		charArray[1] = '\0';
 	}
 
 	return charArray;
+}
+
+void CrowdControlRunner::SetGameNameAndPackID(char* name, char* packID)
+{
+	gamePackID = std::string(packID);
+	gameName = std::string(name);
 }
 
 
@@ -829,6 +1125,19 @@ char* CrowdControlRunner::EngineEffect() {
 		nlohmann::json effectManifest;
 		effectManifest["name"] = effect->effect->displayName;
 		effectManifest["id"] = effect->id;
+		CCEffectInstanceTimed* timedEffect = dynamic_cast<CCEffectInstanceTimed*>(effect.get());
+		CCEffectInstanceParameters* paramEffect = dynamic_cast<CCEffectInstanceParameters*>(effect.get());
+
+		if (timedEffect) {
+			effectManifest["duration"] = timedEffect->runTime;
+		}
+		else if (paramEffect) {
+			if (paramEffect->quantity > 0)
+			{
+				effectManifest["quantity"] = paramEffect->quantity;
+			}
+			effectManifest["params"] = paramEffect->parameters;
+		}
 
 		std::string jsonString = effectManifest.dump(); // Convert JSON object to string
 
@@ -843,37 +1152,37 @@ char* CrowdControlRunner::EngineEffect() {
 	return charArray;
 }
 
-void CrowdControlRunner::AddBasicEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
+void CrowdControlRunner::AddBasicEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
 	std::shared_ptr<CCEffectBase> effect = std::make_shared<CCEffectTest>();
-	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	effect->Setup(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 	std::cout << "Added Effect " << effect->displayName;
 	AddEffect(effect);
 }
 
-void CrowdControlRunner::AddTimedEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration) {
+void CrowdControlRunner::AddTimedEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray, float duration) {
 	std::shared_ptr<CCEffectTimed> timedEffect = std::make_shared<CCEffectTimedTest>();
-	timedEffect->SetupTimed(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
+	timedEffect->SetupTimed(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray, duration);
 	std::cout << "Added Timed Effect " << timedEffect->displayName;
 	AddEffect(timedEffect);
 }
 
-void CrowdControlRunner::AddParameterEffect(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
+void CrowdControlRunner::AddParameterEffect(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray) {
 	std::shared_ptr<CCEffectParameters> effect = std::make_shared<CCEffectParametersTest>();
-	effect->Setup(name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
+	effect->Setup(id, name, desc, price, retries, retryDelay, pendingDelay, sellable, visible, nonPoolable, morality, orderliness, categoriesArray);
 	std::cout << "Added Parameter Effect " << effect->displayName;
 	AddEffect(effect);
 }
 
-void CrowdControlRunner::AddParameterOption(char* name, char* paramName, char** options) {
-	std::string effectID = DisplayNameToID(name);
+void CrowdControlRunner::AddParameterOption(char* id, char* paramName, char** options) {
+	std::string effectID = id;//DisplayNameToID(name);
 	std::shared_ptr<CCEffectBase> effect = CrowdControlRunner::effects[effectID];
 	std::shared_ptr<CCEffectParameters> effectParameters = std::dynamic_pointer_cast<CCEffectParameters>(effect);
 
 	effectParameters->AddOptionsParameter(paramName, options);
 }
 
-void CrowdControlRunner::AddParameterMinMax(char* name, char* paramName, int min, int max) {
-	std::string effectID = DisplayNameToID(name);
+void CrowdControlRunner::AddParameterMinMax(char* id, char* paramName, int min, int max) {
+	std::string effectID = id;//DisplayNameToID(name);
 	std::shared_ptr<CCEffectBase> effect = CrowdControlRunner::effects[effectID];
 	std::shared_ptr<CCEffectParameters> effectParameters = std::dynamic_pointer_cast<CCEffectParameters>(effect);
 
@@ -887,8 +1196,8 @@ int CrowdControlRunner::Run() {
 
 	std::cout.rdbuf(&customBuf);
 
-	gamePackID = "UnityDemo";
-	gameName = "Unity Demo";
+	//gamePackID = "UnityDemo";
+	//gameName = "Unity Demo";
 
 	std::cout << CrowdControlRunner::JSONManifest();
 
@@ -904,3 +1213,140 @@ int CrowdControlRunner::Run() {
 	return EXIT_SUCCESS;
 }
 
+// Custom Effects API Implementation
+static std::string customEffectsResponse;
+
+void CrowdControlRunner::UploadCustomEffects(const char* effectsJson) {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot upload custom effects: Not authenticated.");
+		return;
+	}
+
+	try {
+		nlohmann::json requestBody;
+		requestBody["gamePackID"] = CrowdControlRunner::gamePackID;
+		
+		nlohmann::json operation;
+		operation["mode"] = "merge";
+		operation["effects"] = nlohmann::json::parse(effectsJson);
+		
+		requestBody["operations"] = nlohmann::json::array({ operation });
+
+		web::json::value webJson = web::json::value::parse(requestBody.dump());
+		
+		ServerRequests::SendPut(L"menu/custom-effects", [](const std::wstring& response) {
+			customEffectsResponse = std::string(response.begin(), response.end());
+			Streambuf::Important("Custom effects uploaded successfully!");
+			std::cout << "UploadCustomEffects Response: " << customEffectsResponse << std::endl;
+		}, webJson, false);
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to upload custom effects: " + std::string(e.what()));
+	}
+}
+
+void CrowdControlRunner::ClearCustomEffects() {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot clear custom effects: Not authenticated.");
+		return;
+	}
+
+	try {
+		nlohmann::json requestBody;
+		requestBody["gamePackID"] = CrowdControlRunner::gamePackID;
+		
+		nlohmann::json operation;
+		operation["mode"] = "replace-all";
+		operation["effects"] = nlohmann::json::object();
+		
+		requestBody["operations"] = nlohmann::json::array({ operation });
+
+		web::json::value webJson = web::json::value::parse(requestBody.dump());
+		
+		ServerRequests::SendPut(L"menu/custom-effects", [](const std::wstring& response) {
+			customEffectsResponse = std::string(response.begin(), response.end());
+			Streambuf::Important("Custom effects cleared successfully!");
+			std::cout << "ClearCustomEffects Response: " << customEffectsResponse << std::endl;
+		}, webJson, false);
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to clear custom effects: " + std::string(e.what()));
+	}
+}
+
+void CrowdControlRunner::DeleteCustomEffects(const char* effectIDsJson) {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot delete custom effects: Not authenticated.");
+		return;
+	}
+
+	try {
+		nlohmann::json requestBody;
+		requestBody["gamePackID"] = CrowdControlRunner::gamePackID;
+		
+		// Only include effectIDs if provided and not empty
+		if (effectIDsJson != nullptr && strlen(effectIDsJson) > 0) {
+			nlohmann::json effectIDs = nlohmann::json::parse(effectIDsJson);
+			
+			// Check if it's an array and not empty
+			if (effectIDs.is_array() && !effectIDs.empty()) {
+				requestBody["effectIDs"] = effectIDs;
+			}
+			// If it's an empty array or invalid, don't include effectIDs field
+			// This will delete all custom effects for the gamePackID
+		}
+		// If effectIDsJson is null or empty, don't include effectIDs field
+		// This will delete all custom effects for the gamePackID
+
+		web::json::value webJson = web::json::value::parse(requestBody.dump());
+		
+		ServerRequests::SendPost(L"menu/custom-effects/delete", [](const std::wstring& response) {
+			customEffectsResponse = std::string(response.begin(), response.end());
+			Streambuf::Important("Custom effects deleted successfully!");
+			std::cout << "DeleteCustomEffects Response: " << customEffectsResponse << std::endl;
+		}, webJson, false);
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to delete custom effects: " + std::string(e.what()));
+	}
+}
+
+char* CrowdControlRunner::GetCustomEffects() {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot get custom effects: Not authenticated.");
+		char* result = new char[1];
+		result[0] = '\0';
+		return result;
+	}
+
+	try {
+		customEffectsResponse = "";
+		
+		ServerRequests::RequestGet(L"menu/custom-effects?gamePackID=" + std::wstring(CrowdControlRunner::gamePackID.begin(), CrowdControlRunner::gamePackID.end()), 
+			[](const std::wstring& response) {
+				customEffectsResponse = std::string(response.begin(), response.end());
+				std::cout << "GetCustomEffects Response: " << customEffectsResponse << std::endl;
+			});
+		
+		// Wait for response (simple polling - in production you'd want a better async pattern)
+		int timeout = 0;
+		while (customEffectsResponse.empty() && timeout < 50) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			timeout++;
+		}
+		
+		if (!customEffectsResponse.empty()) {
+			std::cout << "GetCustomEffects Final Response: " << customEffectsResponse << std::endl;
+		}
+		
+		char* result = new char[customEffectsResponse.length() + 1];
+		strcpy_s(result, customEffectsResponse.length() + 1, customEffectsResponse.c_str());
+		return result;
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to get custom effects: " + std::string(e.what()));
+		char* result = new char[1];
+		result[0] = '\0';
+		return result;
+	}
+}

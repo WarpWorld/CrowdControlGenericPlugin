@@ -22,7 +22,7 @@ public:
 	void ToggleSellable(bool sellable);
 	void ToggleVisible(bool visible);
 	void UpdatePrice(unsigned int newPrice);
-	void Setup(char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
+	void Setup(char* id, char* name, char* desc, int price, int retries, float retryDelay, float pendingDelay, bool sellable, bool visible, bool nonPoolable, int morality, int orderliness, char** categoriesArray);
 	//void UpdateNonPoolable(bool newNonPoolable);
 	//void UpdateSessionMax(unsigned int newSessionMax);
 	virtual bool CanBeRan();

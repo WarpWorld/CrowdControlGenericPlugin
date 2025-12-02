@@ -1,8 +1,9 @@
-#include "RPC.hpp"
-#include "CrowdControlRunner.hpp"
+#include "include/RPC.hpp"
+#include "include/CrowdControlRunner.hpp"
 #include <random>
 #include <chrono>
 #include <nlohmann/json.hpp>
+#include "pch.h"
 
 void RPC::Success(CCEffectInstance& instance) {
 	Send(instance, "success");

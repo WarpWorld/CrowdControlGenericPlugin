@@ -1,10 +1,11 @@
-#include "CCEffectInstanceTimed.hpp"
-#include "RPC.hpp"
+#include "include/CCEffectInstanceTimed.hpp"
+#include "include/RPC.hpp"
 #include <chrono>
 #include <memory>
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include "pch.h"
 
 int CCEffectInstanceTimed::TimeRemaining() {
 	if (timedEffect->paused) {

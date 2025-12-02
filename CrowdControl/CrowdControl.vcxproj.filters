@@ -137,5 +137,8 @@
     <ClInclude Include="CreateAndLinkDLLFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\base64.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

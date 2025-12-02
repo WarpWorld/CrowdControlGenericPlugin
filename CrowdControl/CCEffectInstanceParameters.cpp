@@ -1,1 +1,2 @@
-#include "CCEffectInstanceParameters.hpp"
+#include "pch.h"
+#include "include/CCEffectInstanceParameters.hpp"
