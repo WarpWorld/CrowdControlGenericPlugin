@@ -17,6 +17,7 @@ class CC_API ServerRequests {
 public:
 	static pplx::task<void> RequestGet(const std::wstring& getType, std::function<void(const std::wstring&)> callback);
 	static pplx::task<void> SendPost(const std::wstring& postType, std::function<void(const std::wstring&)> callback, web::json::value json = web::json::value(), bool gameSession = true);
+	static pplx::task<void> SendPut(const std::wstring& putType, std::function<void(const std::wstring&)> callback, web::json::value json = web::json::value(), bool gameSession = false);
 
 	static bool makingRequest;
 };

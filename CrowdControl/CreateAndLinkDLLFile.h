@@ -28,6 +28,12 @@ extern "C"
 	DLL_EXPORT char* GetStreamerName();
 	DLL_EXPORT bool  IsJWTTokenValid();
 
+	// Custom Effects API
+	DLL_EXPORT void UploadCustomEffects(const char* effectsJson);
+	DLL_EXPORT void ClearCustomEffects();
+	DLL_EXPORT void DeleteCustomEffects(const char* effectIDsJson);
+	DLL_EXPORT char* GetCustomEffects();
+
 #ifdef __cplusplus
 }
 #endif

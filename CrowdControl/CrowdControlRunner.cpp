@@ -25,6 +25,9 @@
 #include <conio.h>
 #include <random>
 #include <atomic>
+#include <cstring>
+#include <iomanip>
+#include <ctime>
 
 #include "include/CCEffectBase.hpp"
 #include "include/CCEffect.hpp"
@@ -69,6 +72,7 @@ std::unordered_map<std::string, std::queue<std::shared_ptr<CCEffectInstanceTimed
 std::chrono::steady_clock::time_point program_start = std::chrono::steady_clock::now();
 std::chrono::steady_clock::time_point effect_delay = std::chrono::steady_clock::now();
 std::chrono::steady_clock::time_point update_time = std::chrono::steady_clock::now();
+std::chrono::steady_clock::time_point last_ping_time = std::chrono::steady_clock::now();
 
 std::vector<std::string> effectIDs;
 std::vector<std::string> effectInstanceIDs;
@@ -673,8 +677,36 @@ void ReceiveEffectRequest(nlohmann::json payload, bool test) {
 
 void ProcessJSONMessage(std::string message) {
 	std::cout << "RECEIVED: " << message << "\n";
+	
+	// Check if message is just a plain "pong" string (keepalive response)
+	std::string trimmedMessage = message;
+	// Trim whitespace
+	trimmedMessage.erase(0, trimmedMessage.find_first_not_of(" \t\n\r"));
+	trimmedMessage.erase(trimmedMessage.find_last_not_of(" \t\n\r") + 1);
+	
+	if (trimmedMessage == "pong") {
+		std::cout << "[PONG] Received pong response, ignoring." << std::endl;
+		return;
+	}
+	
 	nlohmann::json jsonObj = nlohmann::json::parse(message);
-	std::string messageType = jsonObj["type"];
+	
+	// Check for pong message in JSON format (can be in "action" or "type" field)
+	std::string action = "";
+	std::string messageType = "";
+	
+	if (jsonObj.contains("action")) {
+		action = jsonObj["action"].get<std::string>();
+	}
+	if (jsonObj.contains("type")) {
+		messageType = jsonObj["type"].get<std::string>();
+	}
+	
+	// Ignore pong messages in JSON format - they're just keepalive responses
+	if (action == "pong" || messageType == "pong") {
+		std::cout << "[PONG] Received pong response (JSON), ignoring." << std::endl;
+		return;
+	}
 
 	std::wstring payloadWStr;
 	nlohmann::json payload = nullptr;
@@ -720,6 +752,37 @@ void DoRead() {
 	}
 
 	update_time = std::chrono::steady_clock::now();
+
+	// Send WebSocket ping every 1 minute (60,000 milliseconds) to keep connection alive
+	// AWS API Gateway WebSockets have a 10-minute idle timeout, so 1 minute ensures we stay connected
+	if (ccSocket != nullptr && CrowdControlRunner::connected) {
+		long timeSinceLastPing = GetMillisecondsSinceOffset(last_ping_time);
+		const long PING_INTERVAL_MS = 1 * 60 * 1000; // 1 minute in milliseconds
+		
+		if (timeSinceLastPing >= PING_INTERVAL_MS) {
+			try {
+				// Send JSON ping message for AWS API Gateway compatibility
+				// AWS API Gateway WebSockets handle text messages more reliably than control frames
+				nlohmann::json pingObj;
+				pingObj["action"] = "ping";
+				ccSocket->write(net::buffer(pingObj.dump()));
+				last_ping_time = std::chrono::steady_clock::now();
+				
+				// Log ping with timestamp for verification
+				auto now = std::chrono::system_clock::now();
+				auto time_t = std::chrono::system_clock::to_time_t(now);
+				char timeStr[64];
+				std::tm timeInfo;
+				localtime_s(&timeInfo, &time_t);
+				std::strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &timeInfo);
+				std::cout << "[PING] Sent WebSocket ping at " << timeStr 
+					<< " to keep connection alive (AWS API Gateway)" << std::endl;
+			}
+			catch (const std::exception& e) {
+				std::cerr << "Error sending WebSocket ping: " << e.what() << std::endl;
+			}
+		}
+	}
 
 	if (ccSocket->next_layer().next_layer().available() > 0) {
 		beast::flat_buffer buffer;
@@ -875,6 +938,9 @@ void CrowdControlRunner::Connect() {
 	ccSocket->handshake(host, "/");
 
 	CrowdControlRunner::connected = true;
+	
+	// Initialize ping timer when connection is established
+	last_ping_time = std::chrono::steady_clock::now();
 
 	SendHello();
 
@@ -1012,16 +1078,29 @@ void CrowdControlRunner::ResetCommandCode() {
 
 char* CrowdControlRunner::TestCharArray() {
 	char* charArray = new char[2000];
+	// Initialize the entire buffer to null
+	memset(charArray, 0, 2000);
 
 	if (!Streambuf::queue.empty()) {
-		charArray = new char[2000];
 		std::string tempStr = Streambuf::queue.front();
 		Streambuf::queue.pop();
-		strcpy_s(charArray, 2000, tempStr.c_str());
+		
+		// Ensure we don't overflow the buffer
+		size_t strLen = tempStr.length();
+		if (strLen >= 2000) {
+			strLen = 1999; // Leave room for null terminator
+		}
+		
+		if (strLen > 0) {
+			strncpy_s(charArray, 2000, tempStr.c_str(), strLen);
+			charArray[strLen] = '\0'; // Ensure null termination
+		}
+		else {
+			charArray[0] = '\0';
+		}
 	}
 	else {
 		charArray[0] = '\0';
-		charArray[1] = '\0';
 	}
 
 	return charArray;
@@ -1134,3 +1213,140 @@ int CrowdControlRunner::Run() {
 	return EXIT_SUCCESS;
 }
 
+// Custom Effects API Implementation
+static std::string customEffectsResponse;
+
+void CrowdControlRunner::UploadCustomEffects(const char* effectsJson) {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot upload custom effects: Not authenticated.");
+		return;
+	}
+
+	try {
+		nlohmann::json requestBody;
+		requestBody["gamePackID"] = CrowdControlRunner::gamePackID;
+		
+		nlohmann::json operation;
+		operation["mode"] = "merge";
+		operation["effects"] = nlohmann::json::parse(effectsJson);
+		
+		requestBody["operations"] = nlohmann::json::array({ operation });
+
+		web::json::value webJson = web::json::value::parse(requestBody.dump());
+		
+		ServerRequests::SendPut(L"menu/custom-effects", [](const std::wstring& response) {
+			customEffectsResponse = std::string(response.begin(), response.end());
+			Streambuf::Important("Custom effects uploaded successfully!");
+			std::cout << "UploadCustomEffects Response: " << customEffectsResponse << std::endl;
+		}, webJson, false);
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to upload custom effects: " + std::string(e.what()));
+	}
+}
+
+void CrowdControlRunner::ClearCustomEffects() {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot clear custom effects: Not authenticated.");
+		return;
+	}
+
+	try {
+		nlohmann::json requestBody;
+		requestBody["gamePackID"] = CrowdControlRunner::gamePackID;
+		
+		nlohmann::json operation;
+		operation["mode"] = "replace-all";
+		operation["effects"] = nlohmann::json::object();
+		
+		requestBody["operations"] = nlohmann::json::array({ operation });
+
+		web::json::value webJson = web::json::value::parse(requestBody.dump());
+		
+		ServerRequests::SendPut(L"menu/custom-effects", [](const std::wstring& response) {
+			customEffectsResponse = std::string(response.begin(), response.end());
+			Streambuf::Important("Custom effects cleared successfully!");
+			std::cout << "ClearCustomEffects Response: " << customEffectsResponse << std::endl;
+		}, webJson, false);
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to clear custom effects: " + std::string(e.what()));
+	}
+}
+
+void CrowdControlRunner::DeleteCustomEffects(const char* effectIDsJson) {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot delete custom effects: Not authenticated.");
+		return;
+	}
+
+	try {
+		nlohmann::json requestBody;
+		requestBody["gamePackID"] = CrowdControlRunner::gamePackID;
+		
+		// Only include effectIDs if provided and not empty
+		if (effectIDsJson != nullptr && strlen(effectIDsJson) > 0) {
+			nlohmann::json effectIDs = nlohmann::json::parse(effectIDsJson);
+			
+			// Check if it's an array and not empty
+			if (effectIDs.is_array() && !effectIDs.empty()) {
+				requestBody["effectIDs"] = effectIDs;
+			}
+			// If it's an empty array or invalid, don't include effectIDs field
+			// This will delete all custom effects for the gamePackID
+		}
+		// If effectIDsJson is null or empty, don't include effectIDs field
+		// This will delete all custom effects for the gamePackID
+
+		web::json::value webJson = web::json::value::parse(requestBody.dump());
+		
+		ServerRequests::SendPost(L"menu/custom-effects/delete", [](const std::wstring& response) {
+			customEffectsResponse = std::string(response.begin(), response.end());
+			Streambuf::Important("Custom effects deleted successfully!");
+			std::cout << "DeleteCustomEffects Response: " << customEffectsResponse << std::endl;
+		}, webJson, false);
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to delete custom effects: " + std::string(e.what()));
+	}
+}
+
+char* CrowdControlRunner::GetCustomEffects() {
+	if (CrowdControlRunner::token.empty()) {
+		Streambuf::Warning("Cannot get custom effects: Not authenticated.");
+		char* result = new char[1];
+		result[0] = '\0';
+		return result;
+	}
+
+	try {
+		customEffectsResponse = "";
+		
+		ServerRequests::RequestGet(L"menu/custom-effects?gamePackID=" + std::wstring(CrowdControlRunner::gamePackID.begin(), CrowdControlRunner::gamePackID.end()), 
+			[](const std::wstring& response) {
+				customEffectsResponse = std::string(response.begin(), response.end());
+				std::cout << "GetCustomEffects Response: " << customEffectsResponse << std::endl;
+			});
+		
+		// Wait for response (simple polling - in production you'd want a better async pattern)
+		int timeout = 0;
+		while (customEffectsResponse.empty() && timeout < 50) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			timeout++;
+		}
+		
+		if (!customEffectsResponse.empty()) {
+			std::cout << "GetCustomEffects Final Response: " << customEffectsResponse << std::endl;
+		}
+		
+		char* result = new char[customEffectsResponse.length() + 1];
+		strcpy_s(result, customEffectsResponse.length() + 1, customEffectsResponse.c_str());
+		return result;
+	}
+	catch (const std::exception& e) {
+		Streambuf::Error("Failed to get custom effects: " + std::string(e.what()));
+		char* result = new char[1];
+		result[0] = '\0';
+		return result;
+	}
+}

@@ -100,6 +100,12 @@ public:
 	static void TestEffect(std::string id, std::map<std::string, std::string> paramPairs = std::map<std::string, std::string>());
 	static void TestEffectRemotely(std::string id, std::map<std::string, std::string> paramPairs = std::map<std::string, std::string>());
 
+	// Custom Effects API
+	static void UploadCustomEffects(const char* effectsJson);
+	static void ClearCustomEffects();
+	static void DeleteCustomEffects(const char* effectIDsJson);
+	static char* GetCustomEffects();
+
 	static std::string GetMessage() {
 		std::string temp = CrowdControlRunner::extMessage;
 		CrowdControlRunner::extMessage = "";

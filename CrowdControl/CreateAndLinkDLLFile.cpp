@@ -85,3 +85,20 @@ float *getVector4(float x, float y, float z, float w)
 
 	return (float*)modifiedVector4;
 }
+
+// Custom Effects API exports
+void UploadCustomEffects(const char* effectsJson) {
+	CrowdControlRunner::UploadCustomEffects(effectsJson);
+}
+
+void ClearCustomEffects() {
+	CrowdControlRunner::ClearCustomEffects();
+}
+
+void DeleteCustomEffects(const char* effectIDsJson) {
+	CrowdControlRunner::DeleteCustomEffects(effectIDsJson);
+}
+
+char* GetCustomEffects() {
+	return CrowdControlRunner::GetCustomEffects();
+}
