@@ -1,9 +1,10 @@
 external/
+working-files/
 .vs/
-CrowdControl/vcpkg_installed/
 x64/
 Debug/
 Release/
+CrowdControl/vcpkg_installed/
 *.obj
 *.pdb
 *.ipdb
