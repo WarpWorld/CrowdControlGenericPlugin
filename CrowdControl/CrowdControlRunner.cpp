@@ -1125,6 +1125,7 @@ char* CrowdControlRunner::EngineEffect() {
 		nlohmann::json effectManifest;
 		effectManifest["name"] = effect->effect->displayName;
 		effectManifest["id"] = effect->id;
+		effectManifest["effectID"] = effect->effect->id;
 		CCEffectInstanceTimed* timedEffect = dynamic_cast<CCEffectInstanceTimed*>(effect.get());
 		CCEffectInstanceParameters* paramEffect = dynamic_cast<CCEffectInstanceParameters*>(effect.get());
 
