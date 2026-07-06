@@ -37,6 +37,9 @@ public:
 	static std::string gamePackID;
 	static std::string gameName;
 	static std::string gameSessionID;
+	static std::string appID;
+	static std::string appSecret; // "Public Client Key" - optional, sent with the auth-code token exchange
+	static bool autoStartSession;
 	static std::string engine;
 	static std::string extMessage;
 	static bool sendingPost; 
@@ -65,8 +68,22 @@ public:
 	static void LoginYoutube();
 	static void LoginDiscord();
 
+	// Application (appID) auth-code flow
+	static void SetAppID(const char* id);
+	static void SetAppSecret(const char* secret);
+	static void RequestAuthCode();
+	static char* GetAuthCodeForUnreal(); // one-shot: returns {"code":...,"url":...} once after each auth-code event
+
 	static void SaveToken();
 	static void ClearToken();
+
+	// Effect responses with explanation messages
+	static void FailTemporary(const char* requestID, const char* message);
+	static void FailPermanent(const char* requestID, const char* message);
+
+	// Effect menu reports & pack metadata
+	static bool ReportEffect(const char* effectID, int status); // 0=visible 1=hidden 2=available 3=unavailable
+	static void SendPackMetadata(const char* metadataJson);
 
 	// JWT token decoding methods
 	static std::string GetInteractionURL();

@@ -52,6 +52,153 @@ void EffectFailure(char * id) {
 	CrowdControlRunner::Fail(id);
 }
 
+void EffectFailTemporary(const char* id, const char* message) {
+	CrowdControlRunner::FailTemporary(id, message);
+}
+
+void EffectFailPermanent(const char* id, const char* message) {
+	CrowdControlRunner::FailPermanent(id, message);
+}
+
+// Connection lifecycle.
+// Heap-allocated and intentionally never freed: the runner's destructor performs
+// network calls (StopAllEffects/StopGameSession), which must not run during
+// static destruction at DLL unload.
+static CrowdControlRunner* runnerInstance = new CrowdControlRunner();
+
+int RunCrowdControl() {
+	return runnerInstance->Run();
+}
+
+void ConnectCrowdControl() {
+	CrowdControlRunner::Connect();
+}
+
+void DisconnectCrowdControl() {
+	CrowdControlRunner::Disconnect();
+}
+
+int GetCommandID() {
+	return runnerInstance->CommandID();
+}
+
+void ResetCommand() {
+	runnerInstance->ResetCommandCode();
+}
+
+void SetEngine() {
+	runnerInstance->EngineSet();
+}
+
+bool SetGameNameAndPackId(char* name, char* packID) {
+	if (name == nullptr || packID == nullptr) {
+		return false;
+	}
+
+	CrowdControlRunner::SetGameNameAndPackID(name, packID);
+	return true;
+}
+
+char* GetQueuedMessage() {
+	return runnerInstance->TestCharArray();
+}
+
+char* GetEngineEffect() {
+	return CrowdControlRunner::EngineEffect();
+}
+
+// Legacy platform login
+void LoginTwitch() {
+	CrowdControlRunner::LoginTwitch();
+}
+
+void LoginYoutube() {
+	CrowdControlRunner::LoginYoutube();
+}
+
+void LoginDiscord() {
+	CrowdControlRunner::LoginDiscord();
+}
+
+// Application (appID) auth-code flow
+void SetAppID(const char* appID) {
+	CrowdControlRunner::SetAppID(appID);
+}
+
+void SetPublicClientKey(const char* publicClientKey) {
+	CrowdControlRunner::SetAppSecret(publicClientKey);
+}
+
+void RequestAuthCode() {
+	CrowdControlRunner::RequestAuthCode();
+}
+
+char* GetAuthCode() {
+	return CrowdControlRunner::GetAuthCodeForUnreal();
+}
+
+// Game session control
+void SetAutoStartSession(bool autoStart) {
+	CrowdControlRunner::autoStartSession = autoStart;
+}
+
+void StartSession() {
+	CrowdControlRunner::StartGameSession();
+}
+
+void StopSession() {
+	CrowdControlRunner::StopGameSession();
+}
+
+// Running (timed) effect control. The runner's public API is keyed by display name,
+// so map the effect ID back to its display name first.
+static std::string EffectDisplayNameFromID(const char* effectID) {
+	if (effectID == nullptr) {
+		return std::string();
+	}
+
+	auto it = CrowdControlRunner::effects.find(std::string(effectID));
+	if (it == CrowdControlRunner::effects.end()) {
+		return std::string();
+	}
+
+	return it->second->displayName;
+}
+
+bool StopEffectById(const char* effectID) {
+	std::string displayName = EffectDisplayNameFromID(effectID);
+	return !displayName.empty() && CrowdControlRunner::StopEffect(displayName);
+}
+
+bool ResetEffectById(const char* effectID) {
+	std::string displayName = EffectDisplayNameFromID(effectID);
+	return !displayName.empty() && CrowdControlRunner::ResetEffect(displayName);
+}
+
+bool PauseEffectById(const char* effectID) {
+	std::string displayName = EffectDisplayNameFromID(effectID);
+	return !displayName.empty() && CrowdControlRunner::PauseEffect(displayName);
+}
+
+bool ResumeEffectById(const char* effectID) {
+	std::string displayName = EffectDisplayNameFromID(effectID);
+	return !displayName.empty() && CrowdControlRunner::ResumeEffect(displayName);
+}
+
+bool IsEffectRunning(const char* effectID) {
+	std::string displayName = EffectDisplayNameFromID(effectID);
+	return !displayName.empty() && CrowdControlRunner::IsRunning(displayName);
+}
+
+// Effect menu reports & pack metadata
+bool ReportEffectStatus(const char* effectID, int status) {
+	return CrowdControlRunner::ReportEffect(effectID, status);
+}
+
+void SendPackMetadata(const char* metadataJson) {
+	CrowdControlRunner::SendPackMetadata(metadataJson);
+}
+
 // JWT Token functions for Unreal access
 char* GetOriginID() {
 	return CrowdControlRunner::GetOriginIDForUnreal();

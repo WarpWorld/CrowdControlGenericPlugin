@@ -17,12 +17,16 @@ void RPC::FailTemporarily(CCEffectInstance& instance) {
 	Send(instance, "failTemporary");
 }
 
-void RPC::FailTemporarily(std::string id, int timeRemaining, long startTime) {
-	Send("failTemporary", id, timeRemaining, startTime);
+void RPC::FailTemporarily(std::string id, int timeRemaining, long startTime, const std::string& message) {
+	Send("failTemporary", id, timeRemaining, startTime, message);
 }
 
 void RPC::FailPermanently(CCEffectInstance& instance) {
 	Send(instance, "failPermanent");
+}
+
+void RPC::FailPermanently(std::string id, const std::string& message) {
+	Send("failPermanent", id, 0, 0, message);
 }
 
 void RPC::TimedBegin(CCEffectInstanceTimed& instance) {
@@ -79,7 +83,40 @@ int EpochSeconds() {
 	return seconds.count();
 }
 
-void RPC::Send(const std::string& command, std::string id, int timeRemaining, long startTime) {
+bool RPC::ReportEffectStatus(const std::string& effectID, const std::string& status) {
+	auto it = CrowdControlRunner::effects.find(effectID);
+	if (it == CrowdControlRunner::effects.end()) {
+		return false;
+	}
+
+	Send(*it->second, status);
+	return true;
+}
+
+void RPC::PackMetadataChanged(const std::string& metadataJson) {
+	nlohmann::json metadata;
+
+	try {
+		metadata = nlohmann::json::parse(metadataJson);
+	}
+	catch (const std::exception&) {
+		return;
+	}
+
+	nlohmann::json data;
+	data["token"] = CrowdControlRunner::token;
+	data["call"]["method"] = "packMetadataChanged";
+	data["call"]["args"] = nlohmann::json::array({ CrowdControlRunner::gamePackID, metadata });
+	data["call"]["id"] = RandomString();
+	data["call"]["type"] = "call";
+
+	nlohmann::json jsonObj;
+	jsonObj["action"] = "rpc";
+	jsonObj["data"] = data.dump();
+	CrowdControlRunner::WriteToSocket(jsonObj);
+}
+
+void RPC::Send(const std::string& command, std::string id, int timeRemaining, long startTime, const std::string& message) {
 	nlohmann::json data;
 	data["token"] = CrowdControlRunner::token;
 	data["call"]["method"] = "effectResponse";
@@ -90,10 +127,9 @@ void RPC::Send(const std::string& command, std::string id, int timeRemaining, lo
 	args["request"] = id;
 
 	args["id"] = RandomString();
-	args["stamp"] = startTime;
 	args["status"] = command;
 	args["stamp"] = EpochSeconds();
-	args["message"] = "";
+	args["message"] = message;
 
 	args["timeRemaining"] = timeRemaining;
 

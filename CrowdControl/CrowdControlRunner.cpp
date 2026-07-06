@@ -25,6 +25,7 @@
 #include <conio.h>
 #include <random>
 #include <atomic>
+#include <mutex>
 #include <cstring>
 #include <iomanip>
 #include <ctime>
@@ -57,6 +58,13 @@ std::string CrowdControlRunner::token;
 std::string CrowdControlRunner::gamePackID;
 std::string CrowdControlRunner::gameName;
 std::string CrowdControlRunner::gameSessionID;
+std::string CrowdControlRunner::appID;
+std::string CrowdControlRunner::appSecret;
+bool CrowdControlRunner::autoStartSession = true;
+
+// One-shot auth-code payload for engine polling (see GetAuthCodeForUnreal)
+static std::string pendingAuthCodeJson;
+static std::mutex authCodeMutex;
 std::atomic<bool> CrowdControlRunner::connected;
 bool CrowdControlRunner::sendingPost = false;
 static std::queue<std::pair<std::function<void(const std::wstring&)>, std::wstring>> PostGetResponses;
@@ -79,7 +87,6 @@ std::vector<std::string> effectInstanceIDs;
 std::queue<std::shared_ptr<CCEffectInstance>> pendingQueue;
 std::shared_ptr<StreamUser> streamer;
 int maxRetries = 3;
-bool startSessionAutomatically = true;
 std::shared_ptr<StreamUser> localUser;
 std::string CrowdControlRunner::engine;
 std::string CrowdControlRunner::extMessage;
@@ -144,10 +151,14 @@ void StartGameSessionProcess(const std::wstring& response) {
 }
 
 void CrowdControlRunner::StopGameSession() {
+	if (CrowdControlRunner::gameSessionID.empty()) {
+		return;
+	}
+
 	nlohmann::json stopMessage;
-	stopMessage["gamePackID"] = CrowdControlRunner::gamePackID;
+	stopMessage["gameSessionID"] = CrowdControlRunner::gameSessionID;
 	web::json::value webJson = web::json::value::parse(stopMessage.dump());
-	ServerRequests::SendPost(L"stop", StartGameSessionProcess, webJson, true);
+	ServerRequests::SendPost(L"stop", StopGameSessionProcess, webJson, true);
 }
 
 void CrowdControlRunner::StartGameSession() {
@@ -182,7 +193,7 @@ void ProcessSubResult(std::string message) {
 
 		CrowdControlRunner::commandCode = 3;
 
-		if (startSessionAutomatically) {
+		if (CrowdControlRunner::autoStartSession) {
 			CrowdControlRunner::StartGameSession();
 		}
 	});
@@ -318,6 +329,42 @@ void Login(std::string loginPlatform) {
 	std::system(command.c_str());
 }
 
+void CrowdControlRunner::SetAppID(const char* id) {
+	CrowdControlRunner::appID = (id != nullptr) ? std::string(id) : std::string();
+}
+
+void CrowdControlRunner::SetAppSecret(const char* secret) {
+	CrowdControlRunner::appSecret = (secret != nullptr) ? std::string(secret) : std::string();
+}
+
+// Asks the PubSub service to generate an application auth code. The response arrives
+// as an "application-auth-code" event handled in ProcessJSONMessage.
+void CrowdControlRunner::RequestAuthCode() {
+	if (CrowdControlRunner::appID.empty()) {
+		Streambuf::Warning("Cannot request auth code: no appID set. Call SetAppID first.");
+		return;
+	}
+
+	nlohmann::json data;
+	data["appID"] = CrowdControlRunner::appID;
+
+	nlohmann::json authObj;
+	authObj["action"] = "generate-auth-code";
+	authObj["data"] = std::string(data.dump());
+
+	CrowdControlRunner::WriteToSocket(authObj);
+}
+
+char* CrowdControlRunner::GetAuthCodeForUnreal() {
+	// Static storage: polled every engine tick, so no per-call heap allocation.
+	static std::string authCodeBuffer;
+
+	std::lock_guard<std::mutex> lock(authCodeMutex);
+	authCodeBuffer.clear();
+	authCodeBuffer.swap(pendingAuthCodeJson);
+	return const_cast<char*>(authCodeBuffer.c_str());
+}
+
 void CrowdControlRunner::LoginTwitch() {
 	Login("twitch");
 }
@@ -339,7 +386,8 @@ std::string ToLower(std::string str) {
 }
 
 void CrowdControlRunner::SaveToken() {
-	std::ofstream outFile("token.cc");
+	std::ofstream outFile("token.cc", std::ios::trunc);
+	outFile << CrowdControlRunner::token;
 	outFile.close();
 }
 
@@ -374,6 +422,28 @@ static std::string base64_decode(const std::string& encoded_string) {
 
 static std::string profileType;
 static std::string originID;
+static long long tokenExpiry = 0; // unix seconds; 0 = unknown/no expiry claim
+
+static bool TokenIsUsable() {
+	if (CrowdControlRunner::token.empty()) {
+		return false;
+	}
+
+	if (!CrowdControlRunner::DecodeJWTToken()) {
+		return false;
+	}
+
+	if (tokenExpiry == 0) {
+		return true;
+	}
+
+	auto now = std::chrono::duration_cast<std::chrono::seconds>(
+		std::chrono::system_clock::now().time_since_epoch()).count();
+
+	// Refuse tokens within a minute of expiry so we don't authenticate with a token
+	// that dies mid-handshake.
+	return tokenExpiry > now + 60;
+}
 
 bool CrowdControlRunner::DecodeJWTToken() {
 	if (CrowdControlRunner::token.empty()) {
@@ -403,13 +473,20 @@ bool CrowdControlRunner::DecodeJWTToken() {
 		// Parse JSON payload
 		nlohmann::json payloadJson = nlohmann::json::parse(decodedPayload);
 		
+		if (payloadJson.contains("exp") && payloadJson["exp"].is_number()) {
+			tokenExpiry = payloadJson["exp"].get<long long>();
+		}
+		else {
+			tokenExpiry = 0;
+		}
+
 		// Extract profileType and originID
 		if (payloadJson.contains("profileType") && payloadJson.contains("originID")) {
 			profileType = payloadJson["profileType"].get<std::string>();
 			originID = payloadJson["originID"].get<std::string>();
 			return true;
 		}
-		
+
 		return false;
 	}
 	catch (const std::exception& e) {
@@ -536,8 +613,8 @@ bool CrowdControlRunner::IsJWTTokenValid() {
 			return false;
 		}
 		
-		// Try to decode and parse the payload
-		return DecodeJWTToken();
+		// Try to decode and parse the payload, and reject expired tokens
+		return TokenIsUsable();
 	}
 	catch (const std::exception& e) {
 		return false;
@@ -572,10 +649,15 @@ void Processwhoami(std::string message) {
 		inFile.close();
 	}
 
-	if (CrowdControlRunner::token == "") {
+	if (!TokenIsUsable()) {
+		CrowdControlRunner::token = "";
 		CrowdControlRunner::commandCode = 2;
 
-		if (CrowdControlRunner::engine == "") {
+		if (!CrowdControlRunner::appID.empty()) {
+			// Application auth: generate an auth code for the user to redeem.
+			CrowdControlRunner::RequestAuthCode();
+		}
+		else if (CrowdControlRunner::engine == "") {
 			CrowdControlRunner::ChooseSite();
 		}
 	}
@@ -583,6 +665,74 @@ void Processwhoami(std::string message) {
 	{
 		Subscribe();
 	}
+}
+
+static std::string lastGeneratedAuthCode;
+
+void ProcessAuthCode(nlohmann::json payload) {
+	std::string code = payload.value("code", "");
+	std::string url = payload.value("url", "");
+	lastGeneratedAuthCode = code;
+
+	nlohmann::json authCodeJson;
+	authCodeJson["code"] = code;
+	authCodeJson["url"] = url;
+
+	{
+		std::lock_guard<std::mutex> lock(authCodeMutex);
+		pendingAuthCodeJson = authCodeJson.dump();
+	}
+
+	CrowdControlRunner::commandCode = 2;
+	Streambuf::Important("Auth code received: " + code + " - redeem at " + url);
+}
+
+// Once the user redeems the auth code, exchange it for a JWT session token.
+void ProcessAuthCodeRedeemed(nlohmann::json payload) {
+	std::string code = payload.value("code", "");
+
+	if (code.empty()) {
+		code = lastGeneratedAuthCode;
+	}
+
+	nlohmann::json exchangeMessage;
+	exchangeMessage["appID"] = CrowdControlRunner::appID;
+	exchangeMessage["code"] = code;
+
+	if (!CrowdControlRunner::appSecret.empty()) {
+		exchangeMessage["secret"] = CrowdControlRunner::appSecret;
+	}
+	else {
+		Streambuf::Warning("Exchanging auth code without a Public Client Key (secret) - the request may be rejected.");
+	}
+
+	web::json::value webJson = web::json::value::parse(exchangeMessage.dump());
+
+	ServerRequests::SendPost(L"auth/application/token", [](const std::wstring& response) {
+		try {
+			nlohmann::json tokenJSON = nlohmann::json::parse(std::string(response.begin(), response.end()));
+
+			std::string newToken;
+			if (tokenJSON.is_string()) {
+				newToken = tokenJSON.get<std::string>();
+			}
+			else if (tokenJSON.contains("token")) {
+				newToken = tokenJSON["token"].get<std::string>();
+			}
+
+			if (newToken.empty()) {
+				Streambuf::Error("Auth code exchange returned no token.");
+				return;
+			}
+
+			CrowdControlRunner::token = newToken;
+			CrowdControlRunner::SaveToken();
+			Subscribe();
+		}
+		catch (const std::exception& e) {
+			Streambuf::Error("Failed to parse auth token response: " + std::string(e.what()));
+		}
+	}, webJson, false);
 }
 
 void ProcessLoginSuccess(std::string message) {
@@ -727,6 +877,12 @@ void ProcessJSONMessage(std::string message) {
 	else if (messageType == "subscription-result") {
 		ProcessSubResult(message);
 	}
+	else if (messageType == "application-auth-code") {
+		ProcessAuthCode(payload);
+	}
+	else if (messageType == "application-auth-code-redeemed") {
+		ProcessAuthCodeRedeemed(payload);
+	}
 	else if (messageType == "game-session-start") {
 		StartGameSessionProcess(payloadWStr);
 	}
@@ -744,6 +900,32 @@ void CrowdControlRunner::Success(char * id) {
 
 void CrowdControlRunner::Fail(char * id) {
 	RPC::FailTemporarily(std::string(id), 0, 0);
+}
+
+void CrowdControlRunner::FailTemporary(const char* requestID, const char* message) {
+	RPC::FailTemporarily(std::string(requestID), 0, 0, message != nullptr ? std::string(message) : std::string());
+}
+
+void CrowdControlRunner::FailPermanent(const char* requestID, const char* message) {
+	RPC::FailPermanently(std::string(requestID), message != nullptr ? std::string(message) : std::string());
+}
+
+bool CrowdControlRunner::ReportEffect(const char* effectID, int status) {
+	static const char* statusNames[] = { "menuVisible", "menuHidden", "menuAvailable", "menuUnavailable" };
+
+	if (effectID == nullptr || status < 0 || status > 3) {
+		return false;
+	}
+
+	return RPC::ReportEffectStatus(std::string(effectID), statusNames[status]);
+}
+
+void CrowdControlRunner::SendPackMetadata(const char* metadataJson) {
+	if (metadataJson == nullptr) {
+		return;
+	}
+
+	RPC::PackMetadataChanged(std::string(metadataJson));
 }
 
 void DoRead() {
@@ -1077,8 +1259,9 @@ void CrowdControlRunner::ResetCommandCode() {
 }
 
 char* CrowdControlRunner::TestCharArray() {
-	char* charArray = new char[2000];
-	// Initialize the entire buffer to null
+	// Static buffer: this is polled every engine tick, so per-call heap allocation
+	// would leak (the engine never frees DLL-allocated memory).
+	static char charArray[2000];
 	memset(charArray, 0, 2000);
 
 	if (!Streambuf::queue.empty()) {
@@ -1114,11 +1297,11 @@ void CrowdControlRunner::SetGameNameAndPackID(char* name, char* packID)
 
 
 char* CrowdControlRunner::EngineEffect() {
-	char* charArray = new char[2000];
+	// Static buffer: polled every engine tick (see TestCharArray).
+	static char charArray[2000];
+	charArray[0] = '\0';
 
 	if (!engineQueuedEffects.empty()) {
-		charArray = new char[2000];
-
 		std::shared_ptr<CCEffectInstance> effect = engineQueuedEffects.front();
 		engineQueuedEffects.pop();
 
@@ -1126,6 +1309,10 @@ char* CrowdControlRunner::EngineEffect() {
 		effectManifest["name"] = effect->effect->displayName;
 		effectManifest["id"] = effect->id;
 		effectManifest["effectID"] = effect->effect->id;
+
+		if (effect->sender != nullptr) {
+			effectManifest["viewer"] = effect->sender->name;
+		}
 		CCEffectInstanceTimed* timedEffect = dynamic_cast<CCEffectInstanceTimed*>(effect.get());
 		CCEffectInstanceParameters* paramEffect = dynamic_cast<CCEffectInstanceParameters*>(effect.get());
 
@@ -1142,14 +1329,9 @@ char* CrowdControlRunner::EngineEffect() {
 
 		std::string jsonString = effectManifest.dump(); // Convert JSON object to string
 
-		strcpy_s(charArray, 2000, jsonString.c_str());
+		strncpy_s(charArray, 2000, jsonString.c_str(), _TRUNCATE);
 
 	}
-	else {
-		charArray[0] = '\0';
-		charArray[1] = '\0';
-	}
-
 	return charArray;
 }
 
